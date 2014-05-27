@@ -4,5 +4,5 @@ pxlsrt
 Pixel sorter written in Ruby
 
 ```
-ruby pxlsrt.rb [input file name] [minimum pixel bandlength] [maximum bandlength] [output file name] [sort by: sum-rgb | red | green | blue | hue | saturation | brightness | sum-hsb | uniqueness] [reverse: no | reverse | either] [rotate ninety degrees: 0 | 1]
+ruby pxlsrt.rb [input file name] [minimum pixel bandlength] [maximum bandlength] [output file name] [sort by: sum-rgb | red | green | blue | hue | saturation | brightness | sum-hsb | uniqueness] [reverse: no | reverse | either] [rotate ninety degrees: 0 | 1] [smooth texture: no | smooth]
 ```

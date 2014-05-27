@@ -163,17 +163,43 @@ else
 	nre=0
 end
 
-toImage=[]
-for m in imageRGBLines(kml, w)
-	sliceRanges=randomSlices(m, ARGV[1].to_i, ARGV[2].to_i)
-	#puts sliceRanges.last.last
-	newInTown=[]
-	for ranger in sliceRanges
-		newInTown.concat(pixelSort(m[ranger[0]..ranger[1]], contented(ARGV[4])!=false ? ARGV[4] : "sum-rgb", nre))
+if contented(ARGV[7])
+	case ARGV[7].downcase
+		when "smooth"
+			smooth=true
+		else
+			smooth=false
 	end
-	toImage.concat(newInTown)
+else
+	smooth=false
 end
 
+if smooth==false
+	toImage=[]
+	for m in imageRGBLines(kml, w)
+		sliceRanges=randomSlices(m, ARGV[1].to_i, ARGV[2].to_i)
+		#puts sliceRanges.last.last
+		newInTown=[]
+		for ranger in sliceRanges
+			newInTown.concat(pixelSort(m[ranger[0]..ranger[1]], contented(ARGV[4])!=false ? ARGV[4] : "sum-rgb", nre))
+		end
+		toImage.concat(newInTown)
+	end
+else
+	toImage=[]
+	for m in imageRGBLines(kml, w)
+		sliceRanges=randomSlices(m, ARGV[1].to_i, ARGV[2].to_i)
+		#puts sliceRanges.last.last
+		newInTown=[]
+		for ranger in sliceRanges
+			k=(m[ranger[0]..ranger[1]]).group_by { |x| x }
+			g=pixelSort(k.keys, contented(ARGV[4])!=false ? ARGV[4] : "sum-rgb", nre)
+			j=g.map { |x| k[x] }.flatten(1)
+			newInTown.concat(j)
+		end
+		toImage.concat(newInTown)
+	end
+end
 for xy in 0..(w*h-1)
 	sorted[xy % w, (xy/w).floor]=arrayToRGB(toImage[xy])
 end

@@ -24,55 +24,74 @@ ruby pxlsrt.rb INPUT OUTPUT --min MIN --max MAX [--vertical] [--smooth] [--rever
 
 Sorts by the sum of the red, green, and blue values of the pixels.
 
-![sum-rgb equation](http://www.sciweavers.org/tex2img.php?eq=f%28red%2C%20green%2C%20blue%29%20%3D%20red%20%2B%20green%20%2B%20blue&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+```
+sum-rgb(red, green, blue) = red + green + blue
+```
 
 ### red ###
 
 Sorts by the red value of the pixels.
 
-![red equation](http://www.sciweavers.org/tex2img.php?eq=f%28red%2Cgreen%2Cblue%29%20%3D%20red&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+```
+red(red, green, blue) = red
+```
 
 ### green ###
 
 Sorts by the green value of the pixels.
 
-![green equation](http://www.sciweavers.org/tex2img.php?eq=f%28red%2Cgreen%2Cblue%29%20%3D%20green&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+```
+green(red, green, blue) = green
+```
 
 ### blue ###
 
 Sorts by the blue value of the pixels.
 
-![blue equation](http://www.sciweavers.org/tex2img.php?eq=f%28red%2Cgreen%2Cblue%29%20%3D%20blue&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+```
+blue(red, green, blue) = blue
+```
 
 ### sum-hsb ###
 
 Creates a sum of the hue, saturation, and brightness values of the pixel and sorts by that. The smoothing option is suggested for this method.
 
-![sum-hsb equation](http://www.sciweavers.org/tex2img.php?eq=f%28hue%2Csaturation%2Cbrightness%29%3Dhue%2A100%2F360%20%2B%20saturation%20%2B%20brightness&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+```
+sum-hsb(hue, saturation, brightness) = (hue * 100 / 360) + saturation + brightness
+```
 
 ### hue ###
 
 Sorts by the hue value of the pixels, creating something like a rainbow. The smoothing option is suggested for this method.
 
-![hue equation](http://www.sciweavers.org/tex2img.php?eq=f%28hue%2Csaturation%2Cbrightness%29%3Dhue&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+```
+hue(hue, saturation, brightness) = hue
+```
 
 ### saturation ###
 
 Sorts by the saturation value of the pixels, creating an effect like the bands are fading to grey. The smoothing option is suggested for this method.
 
-![saturation equation](http://www.sciweavers.org/tex2img.php?eq=f%28hue%2Csaturation%2Cbrightness%29%3Dsaturation&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+```
+saturation(hue, saturation, brightness) = saturation
+```
 
 ### brightness ###
 
 Sorts by the brightness value of the pixels. Produces a similar result to sum-rgb, but not exactly the same.
 
-![brightness equation](http://www.sciweavers.org/tex2img.php?eq=f%28hue%2Csaturation%2Cbrightness%29%3Dbrightness&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+```
+brightness(hue, saturation, brightness) = brightness
+```
 
 ### uniqueness ###
 
 Sorts by the "distance" of the pixel from the average color of band (excluding the pixel being determined).
 
-![uniqueness equation](http://www.sciweavers.org/tex2img.php?eq=f%28red%2C%20green%2C%20blue%2C%20reds%2C%20greens%2C%20blues%29%3D%20%5Csqrt%7B%28red-avg%28reds%29%29%5E%7B2%7D%2B%28green-avg%28greens%29%29%5E%7B2%7D%2B%28blue-avg%28blues%29%29%5E%7B2%7D%7D%20&bc=White&fc=Black&im=jpg&fs=12&ff=arev&edit=0)
+```
+avg(colors) = sum(colors) / (length of colors)
+uniqueness(red, green, blue, reds, greens, blues) = sqrt((red-avg(reds))^2+(green-avg(greens))^2+(blue-avg(blues))^2)
+```
 
 ## Examples ##
 

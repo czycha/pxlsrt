@@ -1,23 +1,5 @@
 require 'rubygems'
 require 'chunky_png'
-#require 'bigdecimal'
-#require 'json'
-
-=begin
-pumpkinSpice=[253, 151, 31]
-henn1nk=[166,226,46]
-boundedRationality=[102,217,239]
-orchid=[249,38,114]
-sundriedClay=[39,40,34]
-
-colors=[pumpkinSpice, orchid, henn1nk, sundriedClay, boundedRationality]
-
-def colorBlend(c1, c2, steps, step)
-	o={"steps" => BigDecimal.new(steps), "step" => BigDecimal.new(step)}
-	cD={"r"=>BigDecimal.new(c2[0]-c1[0])/o["steps"], "g"=>(c2[1]-c1[1])/o["steps"], "b"=>(c2[2]-c1[2])/o["steps"]}
-	return [(cD["r"]*o["step"]+c1[0]).round, (cD["g"]*o["step"]+c1[1]).round, (cD["b"]*o["step"]+c1[2]).round]
-end
-=end
 
 def contented(c)
 	return (((defined? c)!="nil") && ((/(\S)/.match("#{c}"))!=nil))
@@ -89,6 +71,9 @@ def pixelSort(list, how, reverse)
 			mhm= list.sort_by { |c| rgb2hsb(c)[2] }
 		when "sum-hsb"
 			mhm= list.sort_by { |c| k=rgb2hsb(c); k[0]*100/360+k[1]+k[2] }
+		when "uniqueness"
+			avg=colorAverage(list)
+			mhm=list.sort_by { |c| colorUniqueness(c, [avg]) }
 		else
 			mhm= list.sort_by { |c| pxldex(c) }
 	end
@@ -117,7 +102,6 @@ def randomSlices(arr, minLength, maxLength)
 	last=nu.first[1]
 	sorting=true
 	while sorting do
-		#puts last
 		if (len-last) <= maxLength
 			nu.push([last+1, len])
 			sorting=false
@@ -127,6 +111,24 @@ def randomSlices(arr, minLength, maxLength)
 		end
 	end
 	return nu
+end
+
+def colorDistance(c1,c2)
+	return Math.sqrt((c1[0]-c2[0])**2+(c1[1]-c2[1])**2+(c1[2]-c2[2])**2)
+end
+
+def colorAverage(ca)
+	if ca.length==1
+		return ca.first
+	end
+	r=((ca.collect { |c| c[0] }).inject{ |sum, el| sum+el }).to_f / ca.size
+	g=((ca.collect { |c| c[1] }).inject{ |sum, el| sum+el }).to_f / ca.size
+	b=((ca.collect { |c| c[2] }).inject{ |sum, el| sum+el }).to_f / ca.size
+	return [r,g,b]
+end
+
+def colorUniqueness(c, ca)
+	return colorDistance(c, colorAverage(ca))
 end
 
 png=ChunkyPNG::Image.from_file(ARGV[0])
@@ -170,12 +172,7 @@ for m in imageRGBLines(kml, w)
 		newInTown.concat(pixelSort(m[ranger[0]..ranger[1]], contented(ARGV[4])!=false ? ARGV[4] : "sum-rgb", nre))
 	end
 	toImage.concat(newInTown)
-	#puts toImage.length, newInTown.length
 end
-
-#toImage.flatten!(2)
-
-#puts toImage.last
 
 for xy in 0..(w*h-1)
 	sorted[xy % w, (xy/w).floor]=arrayToRGB(toImage[xy])

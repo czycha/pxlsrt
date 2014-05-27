@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'chunky_png'
+require 'oily_png'
 
 def contented(c)
 	return (((defined? c)!="nil") && ((/(\S)/.match("#{c}"))!=nil))

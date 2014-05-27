@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'oily_png'
+require 'thor'
 
 def contented(c)
 	return (((defined? c)!="nil") && ((/(\S)/.match("#{c}"))!=nil))
@@ -131,84 +132,61 @@ def colorUniqueness(c, ca)
 	return colorDistance(c, colorAverage(ca))
 end
 
-png=ChunkyPNG::Image.from_file(ARGV[0])
-
-if contented(ARGV[6])
-	case ARGV[6].downcase
-		when "90", "1"
+class PXLSRT < Thor
+	option :reverse, :type => :string, :default => "no", :banner => "[no | reverse | either]", :aliases => "-r", :enum => ["no", "reverse", "either"]
+	option :vertical, :type => :boolean, :default => false, :aliases => "-v"
+	option :smooth, :type => :boolean, :default => true, :aliases => "-s"
+	option :method, :type => :string, :default => "sum-rgb", :banner => "[sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness]", :aliases => "-m", :enum => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness"]
+	option :min, :type => :numeric, :required => true, :banner => "MINIMUM BANDWIDTH"
+	option :max, :type => :numeric, :required => true, :banner => "MAXIMUM BANDWIDTH"
+	desc "brute INPUT OUTPUT [options]", "Brute pixel sorting"
+	def brute(input, output)
+		case options[:reverse].downcase
+			when "reverse"
+				nre=1
+			when "either"
+				nre=-1
+			else
+				nre=0
+		end
+		png=ChunkyPNG::Image.from_file(input)
+		if options[:vertical]==true
 			png=png.rotate_left
-	end
-end
-w=png.dimension.width
-h=png.dimension.height
-
-sorted=ChunkyPNG::Image.new(w, h, ChunkyPNG::Color::TRANSPARENT)
-
-kml=[]
-
-for xy in 0..(w*h-1)
-	kml.push(getRGB(png[xy % w,(xy/w).floor]))
-end
-
-if contented(ARGV[5])
-	case ARGV[5].downcase
-		when "reverse"
-			nre=1
-		when "either"
-			nre=-1
-		else
-			nre=0
-	end
-else
-	nre=0
-end
-
-if contented(ARGV[7])
-	case ARGV[7].downcase
-		when "smooth"
-			smooth=true
-		else
-			smooth=false
-	end
-else
-	smooth=false
-end
-
-if smooth==false
-	toImage=[]
-	for m in imageRGBLines(kml, w)
-		sliceRanges=randomSlices(m, ARGV[1].to_i, ARGV[2].to_i)
-		#puts sliceRanges.last.last
-		newInTown=[]
-		for ranger in sliceRanges
-			newInTown.concat(pixelSort(m[ranger[0]..ranger[1]], contented(ARGV[4])!=false ? ARGV[4] : "sum-rgb", nre))
 		end
-		toImage.concat(newInTown)
-	end
-else
-	toImage=[]
-	for m in imageRGBLines(kml, w)
-		sliceRanges=randomSlices(m, ARGV[1].to_i, ARGV[2].to_i)
-		#puts sliceRanges.last.last
-		newInTown=[]
-		for ranger in sliceRanges
-			k=(m[ranger[0]..ranger[1]]).group_by { |x| x }
-			g=pixelSort(k.keys, contented(ARGV[4])!=false ? ARGV[4] : "sum-rgb", nre)
-			j=g.map { |x| k[x] }.flatten(1)
-			newInTown.concat(j)
+		w=png.dimension.width
+		h=png.dimension.height
+		sorted=ChunkyPNG::Image.new(w, h, ChunkyPNG::Color::TRANSPARENT)
+		kml=[]
+		for xy in 0..(w*h-1)
+			kml.push(getRGB(png[xy % w,(xy/w).floor]))
 		end
-		toImage.concat(newInTown)
-	end
-end
-for xy in 0..(w*h-1)
-	sorted[xy % w, (xy/w).floor]=arrayToRGB(toImage[xy])
-end
-
-if contented(ARGV[6])
-	case ARGV[6].downcase
-		when "90", "1"
+		toImage=[]
+		for m in imageRGBLines(kml, w)
+			sliceRanges=randomSlices(m, options[:min], options[:max])
+			#puts sliceRanges.last.last
+			newInTown=[]
+			if options[:smooth]==true
+				for ranger in sliceRanges
+					newInTown.concat(pixelSort(m[ranger[0]..ranger[1]], options[:method].downcase, nre))
+				end
+			else
+				for ranger in sliceRanges
+					k=(m[ranger[0]..ranger[1]]).group_by { |x| x }
+					g=pixelSort(k.keys, options[:method].downcase, nre)
+					j=g.map { |x| k[x] }.flatten(1)
+					newInTown.concat(j)
+				end
+			end
+			toImage.concat(newInTown)
+		end
+		for xy in 0..(w*h-1)
+			sorted[xy % w, (xy/w).floor]=arrayToRGB(toImage[xy])
+		end
+		if options[:vertical]==true
 			sorted=sorted.rotate_right
+		end
+		sorted.save(output)
 	end
 end
 
-sorted.save(ARGV[3], :interlace => false)
+PXLSRT.start(ARGV)

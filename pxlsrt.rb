@@ -198,7 +198,7 @@ class PXLSRT < Thor
 	option :absolute, :type => :boolean, :default => false, :aliases => "-a"
 	option :threshold, :type => :numeric, :required => true, :aliases => "-t"
 	option :edge, :type => :numeric, :default => 2, :aliases => "-e"
-	desc "g", "g"
+	desc "smart INPUT OUTPUT [options]", "Smart pixel sorting"
 	def smart(input, output)
 		case options[:reverse].downcase
 			when "reverse"

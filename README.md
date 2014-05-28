@@ -3,20 +3,63 @@ pxlsrt
 
 Pixel sorter written in Ruby.
 
+
+## Brute sort ##
+
 ```
-ruby pxlsrt.rb INPUT OUTPUT --min MIN --max MAX [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness]]
+ruby pxlsrt.rb brute INPUT OUTPUT --min MIN --max MAX [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness]]
 ```
 
-## Options  and parameters ##
+### Options and parameters ###
 
-* `INPUT` ***(required string)*** - PNG image that is to be sorted.
-* `OUTPUT` ***(required string)*** - PNG image that is to be output to. Image does not need to exist.
-* `--min MIN` ***(required integer)*** - Minimum length of bandwidth, 1 to infinity. If the length is greater than the dimension of the image, the minimum length is the dimension.
-* `--max MAX` ***(required integer)*** - Maximum length of bandwidth, 1 to infinity. If the length is greater than the dimension of the image, the maximum length is the dimension.
-* `--vertical` or `-v` ***(optional boolean)*** - Sorts vertically instead of horizontally. Defaults to `false`.
-* `--smooth` or `-s` ***(optional boolean)*** - Places identical pixels adjacent to each other within the band. Here's why this may be needed. Within a band are the following colors: rgb(0, 255, 0), rgb(0, 0, 0), rgb(0, 255, 0). If you sort by the red value, they will all be in the same area because their red values are all 0. However, they will be arranged into the area as they are ordered in the list. If the band is smoothed, the two rgb(0, 255, 0) pixels will be next to each other. Smoothing does not affect values outside of the band. Defaults to `false`.
-* `--reverse REVERSETYPE` or `-r REVERSETYPE` ***(optional string)*** - Has three options for `REVERSETYPE`: `no`, `reverse`, and `either`. `no` does not reverse the bands. `reverse` does. `either` has a 50% chance of either reversing or keeping it in the same order. Defaults to `no`.
-* `--method METHOD` or `-m METHOD` ***(optional string)*** - Sets the method used to sort the band. In the next section are descriptions of each method. Defaults to `sum-rgb`.
+* **`INPUT`** *(required string)* - PNG image that is to be sorted.
+* **`OUTPUT`** *(required string)* - PNG image that is to be output to. Image does not need to exist.
+* **`--min MIN`** *(required integer)* - Minimum length of bandwidth, 1 to infinity. If the length is greater than the dimension of the image, the minimum length is the dimension.
+* **`--max MAX`** *(required integer)* - Maximum length of bandwidth, 1 to infinity. If the length is greater than the dimension of the image, the maximum length is the dimension.
+* **`--vertical`** or **`-v`** *(optional boolean)* - Sorts vertically instead of horizontally. Defaults to `false`.
+* **`--smooth`** or **`-s`** *(optional boolean)* - Places identical pixels adjacent to each other within the band. Here's why this may be needed. Within a band are the following colors: rgb(0, 255, 0), rgb(0, 0, 0), rgb(0, 255, 0). If you sort by the red value, they will all be in the same area because their red values are all 0. However, they will be arranged into the area as they are ordered in the list. If the band is smoothed, the two rgb(0, 255, 0) pixels will be next to each other. Smoothing does not affect values outside of the band. Defaults to `false`.
+* **`--reverse REVERSETYPE`** or **`-r REVERSETYPE`** *(optional string)* - Has three options for `REVERSETYPE`: `no`, `reverse`, and `either`. `no` does not reverse the bands. `reverse` does. `either` has a 50% chance of either reversing or keeping it in the same order. Defaults to `no`.
+* **`--method METHOD`** or **`-m METHOD`** *(optional string)* - Sets the method used to sort the band. In a different section are descriptions of each method. Defaults to `sum-rgb`.
+
+### Examples ###
+
+#### Bare minimum ####
+
+```
+ruby pxlsrt.rb brute input.png output.png --min 20 --max 30
+```
+
+Pixel sorts `input.png` horizontally by the sum of its red, green, and blue values with bandwidths from 20 to 30, does not smooth, does not reverse, and outputs to `output.png`.
+
+#### Full suite example ####
+
+```
+ruby pxlsrt.rb brute input.png output.png --min 20 --max 30 --vertical --smooth --reverse reverse --method hue
+```
+
+Pixel sorts `input.png` vertically by hue with bandwidths from 20 to 30, smoothes it, reverses direction, and outputs to `output.png`.
+
+#### Full suite shortcut example ####
+
+```
+ruby pxlsrt.rb brute input.png output.png --min 20 --max 30 -v -s -r reverse -m hue
+```
+
+Same as above example.
+
+## Smart sort ##
+
+```
+ruby pxlsrt.rb smart INPUT OUTPUT --threshold THRESHOLD [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness]]
+```
+
+### Options and parameters ###
+
+Options that are shared with the brute method are covered there.
+
+* **`--threshold THRESHOLD`** or **`-t THRESHOLD`** *(required integer)* - Used for edge finding.
+* **`--absolute`** or **`-a`** *(optional boolean)* - A different method for edge finding. Defaults to `false`.
+* **`--edge EDGE`** or **`-e EDGE`** *(optional integer)* - "Softens" edges. Defaults to `2`.
 
 ## Sorting methods ##
 
@@ -92,29 +135,3 @@ Sorts by the "distance" of the pixel from the average color of band (excluding t
 avg(colors) = sum(colors) / (length of colors)
 uniqueness(red, green, blue, reds, greens, blues) = sqrt((red-avg(reds))^2+(green-avg(greens))^2+(blue-avg(blues))^2)
 ```
-
-## Examples ##
-
-### Bare minimum ###
-
-```
-ruby pxlsrt.rb input.png output.png --min 20 --max 30
-```
-
-Pixel sorts `input.png` horizontally by the sum of its red, green, and blue values with bandwidths from 20 to 30, does not smooth, does not reverse, and outputs to `output.png`.
-
-### Full suite example ###
-
-```
-ruby pxlsrt.rb input.png output.png --min 20 --max 30 --vertical --smooth --reverse reverse --method hue
-```
-
-Pixel sorts `input.png` vertically by hue with bandwidths from 20 to 30, smoothes it, reverses direction, and outputs to `output.png`.
-
-### Full suite shortcut example ###
-
-```
-ruby pxlsrt.rb input.png output.png --min 20 --max 30 -v -s -r reverse -m hue
-```
-
-Same as above example.

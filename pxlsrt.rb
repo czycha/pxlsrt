@@ -2,6 +2,12 @@ require 'rubygems'
 require 'oily_png'
 require 'thor'
 
+class ChunkyPNG::Image
+	def at(x,y)
+		ChunkyPNG::Color.to_grayscale_bytes(self[x,y]).first
+	end
+end
+
 def contented(c)
 	return (((defined? c)!="nil") && ((/(\S)/.match("#{c}"))!=nil))
 end
@@ -133,10 +139,11 @@ def colorUniqueness(c, ca)
 end
 
 class PXLSRT < Thor
-	option :reverse, :type => :string, :default => "no", :banner => "[no | reverse | either]", :aliases => "-r", :enum => ["no", "reverse", "either"]
-	option :vertical, :type => :boolean, :default => false, :aliases => "-v"
-	option :smooth, :type => :boolean, :default => true, :aliases => "-s"
-	option :method, :type => :string, :default => "sum-rgb", :banner => "[sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness]", :aliases => "-m", :enum => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness"]
+	class_option :reverse, :type => :string, :default => "no", :banner => "[no | reverse | either]", :aliases => "-r", :enum => ["no", "reverse", "either"]
+	class_option :vertical, :type => :boolean, :default => false, :aliases => "-v"
+	class_option :smooth, :type => :boolean, :default => true, :aliases => "-s"
+	class_option :method, :type => :string, :default => "sum-rgb", :banner => "[sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness]", :aliases => "-m", :enum => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness"]
+
 	option :min, :type => :numeric, :required => true, :banner => "MINIMUM BANDWIDTH"
 	option :max, :type => :numeric, :required => true, :banner => "MAXIMUM BANDWIDTH"
 	desc "brute INPUT OUTPUT [options]", "Brute pixel sorting"
@@ -186,6 +193,97 @@ class PXLSRT < Thor
 			sorted=sorted.rotate_right
 		end
 		sorted.save(output)
+	end
+
+	option :absolute, :type => :boolean, :default => false, :aliases => "-a"
+	option :threshold, :type => :numeric, :required => true, :aliases => "-t"
+	option :edge, :type => :numeric, :default => 2, :aliases => "-e"
+	desc "g", "g"
+	def smart(input, output)
+		case options[:reverse].downcase
+			when "reverse"
+				nre=1
+			when "either"
+				nre=-1
+			else
+				nre=0
+		end
+		img = ChunkyPNG::Image.from_file(input)
+		if options[:vertical]==true
+			img=img.rotate_left
+		end
+		sobel_x = [[-1,0,1], [-2,0,2], [-1,0,1]]
+		sobel_y = [[-1,-2,-1], [ 0, 0, 0], [ 1, 2, 1]]
+		edge = ChunkyPNG::Image.new(img.width, img.height, ChunkyPNG::Color::TRANSPARENT)
+		k=[]
+		for xy in 0..(img.width*img.height-1)
+			x=xy % img.width
+			y=(xy/img.width).floor
+			if x!=0 and x!=(img.width-1) and y!=0 and y!=(img.height-1)
+				pixel_x=(sobel_x[0][0]*img.at(x-1,y-1))+(sobel_x[0][1]*img.at(x,y-1))+(sobel_x[0][2]*img.at(x+1,y-1))+(sobel_x[1][0]*img.at(x-1,y))+(sobel_x[1][1]*img.at(x,y))+(sobel_x[1][2]*img.at(x+1,y))+(sobel_x[2][0]*img.at(x-1,y+1))+(sobel_x[2][1]*img.at(x,y+1))+(sobel_x[2][2]*img.at(x+1,y+1))
+				pixel_y=(sobel_y[0][0]*img.at(x-1,y-1))+(sobel_y[0][1]*img.at(x,y-1))+(sobel_y[0][2]*img.at(x+1,y-1))+(sobel_y[1][0]*img.at(x-1,y))+(sobel_y[1][1]*img.at(x,y))+(sobel_y[1][2]*img.at(x+1,y))+(sobel_y[2][0]*img.at(x-1,y+1))+(sobel_y[2][1]*img.at(x,y+1))+(sobel_y[2][2]*img.at(x+1,y+1))
+				val = Math.sqrt(pixel_x * pixel_x + pixel_y * pixel_y).ceil
+			else
+				val = Float::INFINITY
+			end
+			k.push({ "sobel" => val, "pixel" => [x, y], "color" => getRGB(img[x, y]) })
+		end
+
+		lines=imageRGBLines(k, img.width)
+		bands=Array.new()
+		for j in lines
+			slicing=true
+			pixel=0
+			m=Array.new()
+			while slicing do
+				n=Array.new
+				if m.length > 1
+					while m.last.length < options[:edge]
+						if m.length > 1
+							m[-2].concat(m[-1])
+							m.pop
+						else
+							break
+						end
+					end
+				end
+				bandWorking=true
+				while bandWorking do
+					n.push(j[pixel]["color"])
+					if (options[:absolute] ? (j[pixel+1]["sobel"]) : (j[pixel+1]["sobel"]-j[pixel]["sobel"])) > options[:threshold]
+						bandWorking=false
+					end
+					if (pixel+1)==(j.length-1)
+						n.push(j[pixel+1]["color"])
+						slicing=false
+						bandWorking=false
+					end
+					pixel+=1
+				end
+				m.push(n)
+			end
+			bands.concat(m)
+		end
+
+		image=[]
+		if options[:smooth]
+			for band in bands
+				u=band.group_by {|x| x}
+				image.concat(pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1))
+			end
+		else
+			for band in bands
+				image.concat(pixelSort(band, options[:method], nre))
+			end
+		end
+
+		for px in 0..(img.width*img.height-1)
+			edge[px % img.width, (px/img.width).floor]=arrayToRGB(image[px])
+		end
+		if options[:vertical]==true
+			edge=edge.rotate_right
+		end
+		edge.save(output)
 	end
 end
 

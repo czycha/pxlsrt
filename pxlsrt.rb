@@ -81,6 +81,10 @@ def pixelSort(list, how, reverse)
 		when "uniqueness"
 			avg=colorAverage(list)
 			mhm=list.sort_by { |c| colorUniqueness(c, [avg]) }
+		when "luma"
+			mhm=list.sort_by { |c| pxldex([c[0]*0.2126, c[1]*0.7152, c[2]*0.0722]) }
+		when "random"
+			mhm=list.shuffle
 		else
 			mhm= list.sort_by { |c| pxldex(c) }
 	end
@@ -97,25 +101,67 @@ def imageRGBLines(image, width)
 	return image.each_slice(width).to_a
 end
 
+def getDiagonals(array, width, height)
+	dias={}
+	for x in (1-height)..(width-1)
+		z=[]
+		for y in 0..(height-1)
+			if (x+(width+1)*y).between?(width*y, (width*(y+1)-1))
+				z.push(array[(x+(width+1)*y)])
+			end
+		end
+		dias[x.to_s]=z
+	end
+	return dias
+end
+
+def fromDiagonals(obj, width)
+	ell=[]
+	for k in obj.keys
+		r=k.to_i
+		n=r < 0
+		if n
+			x=0
+			y=r.abs
+		else
+			x=r
+			y=0
+		end
+		ell[x+y*width]=obj[k].first
+		for v in 1..(obj[k].length-1)
+			x+=1
+			y+=1
+			ell[x+y*width]=obj[k][v]
+		end
+	end
+	return ell
+end
+
 def randomSlices(arr, minLength, maxLength)
 	len=arr.length-1
-	if minLength > arr.length
-		minLength=len
-	end
-	if maxLength > arr.length
-		maxLength=len
-	end
-	nu=[[0, rand(minLength..maxLength)]]
-	last=nu.first[1]
-	sorting=true
-	while sorting do
-		if (len-last) <= maxLength
-			nu.push([last+1, len])
-			sorting=false
-		else
-			nu.push([last+1, last+1+rand(minLength..maxLength)])
-			last=nu.last[1]
+	if len!=0
+		min=[minLength, maxLength].min
+		max=[maxLength, minLength].max
+		if min > len
+			min=len
 		end
+		if max > len
+			max=len
+		end
+		nu=[[0, rand(min..max)]]
+		last=nu.first[1]
+		sorting=true
+		while sorting do
+			if (len-last) <= max
+				nu.push([last+1, len])
+				sorting=false
+			else
+				nu.push([last+1, last+1+rand(min..max)])
+				last=nu.last[1]
+			end
+		end
+	else
+		nu=[[0,0]]
 	end
 	return nu
 end
@@ -141,8 +187,10 @@ end
 class PXLSRT < Thor
 	class_option :reverse, :type => :string, :default => "no", :banner => "[no | reverse | either]", :aliases => "-r", :enum => ["no", "reverse", "either"]
 	class_option :vertical, :type => :boolean, :default => false, :aliases => "-v"
-	class_option :smooth, :type => :boolean, :default => true, :aliases => "-s"
-	class_option :method, :type => :string, :default => "sum-rgb", :banner => "[sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness]", :aliases => "-m", :enum => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness"]
+	class_option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
+	class_option :smooth, :type => :boolean, :default => false, :aliases => "-s"
+	class_option :method, :type => :string, :default => "sum-rgb", :banner => "[sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]", :aliases => "-m", :enum => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness", "luma", "random"]
+	class_option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
 
 	option :min, :type => :numeric, :required => true, :banner => "MINIMUM BANDWIDTH"
 	option :max, :type => :numeric, :required => true, :banner => "MAXIMUM BANDWIDTH"
@@ -168,23 +216,45 @@ class PXLSRT < Thor
 			kml.push(getRGB(png[xy % w,(xy/w).floor]))
 		end
 		toImage=[]
-		for m in imageRGBLines(kml, w)
-			sliceRanges=randomSlices(m, options[:min], options[:max])
-			#puts sliceRanges.last.last
-			newInTown=[]
-			if options[:smooth]==true
-				for ranger in sliceRanges
-					newInTown.concat(pixelSort(m[ranger[0]..ranger[1]], options[:method].downcase, nre))
+		if !options[:diagonal]
+			for m in imageRGBLines(kml, w)
+				sliceRanges=randomSlices(m, options[:min], options[:max])
+				#puts sliceRanges.last.last
+				newInTown=[]
+				if options[:smooth]==true
+					for ranger in sliceRanges
+						newInTown.concat(pixelSort(m[ranger[0]..ranger[1]], options[:method].downcase, nre))
+					end
+				else
+					for ranger in sliceRanges
+						k=(m[ranger[0]..ranger[1]]).group_by { |x| x }
+						g=pixelSort(k.keys, options[:method].downcase, nre)
+						j=g.map { |x| k[x] }.flatten(1)
+						newInTown.concat(j)
+					end
 				end
-			else
-				for ranger in sliceRanges
-					k=(m[ranger[0]..ranger[1]]).group_by { |x| x }
-					g=pixelSort(k.keys, options[:method].downcase, nre)
-					j=g.map { |x| k[x] }.flatten(1)
-					newInTown.concat(j)
-				end
+				toImage.concat(newInTown)
 			end
-			toImage.concat(newInTown)
+		else
+			dia=getDiagonals(kml,w,h)
+			for m in dia.keys
+				sliceRanges=randomSlices(dia[m], options[:min], options[:max])
+				newInTown=[]
+				if options[:smooth]==true
+					for ranger in sliceRanges
+						newInTown.concat(pixelSort(dia[m][ranger[0]..ranger[1]], options[:method].downcase, nre))
+					end
+				else
+					for ranger in sliceRanges
+						k=(dia[m][ranger[0]..ranger[1]]).group_by { |x| x }
+						g=pixelSort(k.keys, options[:method].downcase, nre)
+						j=g.map { |x| k[x] }.flatten(1)
+						newInTown.concat(j)
+					end
+				end
+				dia[m]=newInTown
+			end
+			toImage=fromDiagonals(dia,w)
 		end
 		for xy in 0..(w*h-1)
 			sorted[xy % w, (xy/w).floor]=arrayToRGB(toImage[xy])
@@ -195,9 +265,9 @@ class PXLSRT < Thor
 		sorted.save(output)
 	end
 
-	option :absolute, :type => :boolean, :default => false, :aliases => "-a"
+	option :absolute, :type => :boolean, :default => false, :aliases => "-a", :banner => "ABSOLUTE EDGE FINDING"
 	option :threshold, :type => :numeric, :required => true, :aliases => "-t"
-	option :edge, :type => :numeric, :default => 2, :aliases => "-e"
+	option :edge, :type => :numeric, :default => 2, :aliases => "-e", :banner => "EDGE BUFFERING"
 	desc "smart INPUT OUTPUT [options]", "Smart pixel sorting"
 	def smart(input, output)
 		case options[:reverse].downcase
@@ -229,54 +299,110 @@ class PXLSRT < Thor
 			k.push({ "sobel" => val, "pixel" => [x, y], "color" => getRGB(img[x, y]) })
 		end
 
-		lines=imageRGBLines(k, img.width)
-		bands=Array.new()
-		for j in lines
-			slicing=true
-			pixel=0
-			m=Array.new()
-			while slicing do
-				n=Array.new
-				if m.length > 1
-					while m.last.length < options[:edge]
-						if m.length > 1
-							m[-2].concat(m[-1])
-							m.pop
-						else
-							break
+		if !options[:diagonal]
+			lines=imageRGBLines(k, img.width)
+			bands=Array.new()
+			for j in lines
+				slicing=true
+				pixel=0
+				m=Array.new()
+				while slicing do
+					n=Array.new
+					if m.length > 1
+						while m.last.length < options[:edge]
+							if m.length > 1
+								m[-2].concat(m[-1])
+								m.pop
+							else
+								break
+							end
 						end
 					end
-				end
-				bandWorking=true
-				while bandWorking do
-					n.push(j[pixel]["color"])
-					if (options[:absolute] ? (j[pixel+1]["sobel"]) : (j[pixel+1]["sobel"]-j[pixel]["sobel"])) > options[:threshold]
-						bandWorking=false
+					bandWorking=true
+					while bandWorking do
+						n.push(j[pixel]["color"])
+						if (options[:absolute] ? (j[pixel+1]["sobel"]) : (j[pixel+1]["sobel"]-j[pixel]["sobel"])) > options[:threshold]
+							bandWorking=false
+						end
+						if (pixel+1)==(j.length-1)
+							n.push(j[pixel+1]["color"])
+							slicing=false
+							bandWorking=false
+						end
+						pixel+=1
 					end
-					if (pixel+1)==(j.length-1)
-						n.push(j[pixel+1]["color"])
-						slicing=false
-						bandWorking=false
-					end
-					pixel+=1
+					m.push(n)
 				end
-				m.push(n)
+				bands.concat(m)
 			end
-			bands.concat(m)
-		end
-
-		image=[]
-		if options[:smooth]
-			for band in bands
-				u=band.group_by {|x| x}
-				image.concat(pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1))
+			image=[]
+			if options[:smooth]
+				for band in bands
+					u=band.group_by {|x| x}
+					image.concat(pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1))
+				end
+			else
+				for band in bands
+					image.concat(pixelSort(band, options[:method], nre))
+				end
 			end
 		else
-			for band in bands
-				image.concat(pixelSort(band, options[:method], nre))
+			dia=getDiagonals(k,img.width,img.height)
+			for j in dia.keys
+				bands=[]
+				if dia[j].length>1
+					slicing=true
+					pixel=0
+					m=Array.new()
+					while slicing do
+						n=Array.new
+						if m.length > 1
+							while m.last.length < options[:edge]
+								if m.length > 1
+									m[-2].concat(m[-1])
+									m.pop
+								else
+									break
+								end
+							end
+						end
+						bandWorking=true
+						while bandWorking do
+							n.push(dia[j][pixel]["color"])
+							if (options[:absolute] ? (dia[j][pixel+1]["sobel"]) : (dia[j][pixel+1]["sobel"]-dia[j][pixel]["sobel"])) > options[:threshold]
+								bandWorking=false
+							end
+							if (pixel+1)==(dia[j].length-1)
+								n.push(dia[j][pixel+1]["color"])
+								slicing=false
+								bandWorking=false
+							end
+							pixel+=1
+						end
+						m.push(n)
+					end
+				else
+					m=[[dia[j].first["color"]]]
+				end
+				dia[j]=bands.concat(m)
 			end
+			for j in dia.keys
+				ell=[]
+				if options[:smooth]
+					for band in dia[j]
+						u=band.group_by {|x| x}
+						ell.concat(pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1))
+					end
+				else
+					for band in dia[j]
+						#puts band.first
+						ell.concat(pixelSort(band, options[:method], nre))
+					end
+				end
+				dia[j]=ell
+			end
+			image=fromDiagonals(dia,img.width)
 		end
-
 		for px in 0..(img.width*img.height-1)
 			edge[px % img.width, (px/img.width).floor]=arrayToRGB(image[px])
 		end

@@ -7,7 +7,7 @@ Pixel sorter written in Ruby.
 ## Brute sort ##
 
 ```
-ruby pxlsrt.rb brute INPUT OUTPUT --min MIN --max MAX [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness]]
+ruby pxlsrt.rb brute INPUT OUTPUT --min MIN --max MAX [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal]
 ```
 
 ### Options and parameters ###
@@ -20,6 +20,7 @@ ruby pxlsrt.rb brute INPUT OUTPUT --min MIN --max MAX [--vertical] [--smooth] [-
 * **`--smooth`** or **`-s`** *(optional boolean)* - Places identical pixels adjacent to each other within the band. Here's why this may be needed. Within a band are the following colors: rgb(0, 255, 0), rgb(0, 0, 0), rgb(0, 255, 0). If you sort by the red value, they will all be in the same area because their red values are all 0. However, they will be arranged into the area as they are ordered in the list. If the band is smoothed, the two rgb(0, 255, 0) pixels will be next to each other. Smoothing does not affect values outside of the band. Defaults to `false`.
 * **`--reverse REVERSETYPE`** or **`-r REVERSETYPE`** *(optional string)* - Has three options for `REVERSETYPE`: `no`, `reverse`, and `either`. `no` does not reverse the bands. `reverse` does. `either` has a 50% chance of either reversing or keeping it in the same order. Defaults to `no`.
 * **`--method METHOD`** or **`-m METHOD`** *(optional string)* - Sets the method used to sort the band. In a different section are descriptions of each method. Defaults to `sum-rgb`.
+* **`--diagonal`** or **`-d`** *(optional boolean)* - Sorts pixels diagonally. To reverse the direction of the diagonal, use with `--vertical`. Defaults to `false`.
 
 ### Examples ###
 
@@ -50,7 +51,7 @@ Same as above example.
 ## Smart sort ##
 
 ```
-ruby pxlsrt.rb smart INPUT OUTPUT --threshold THRESHOLD [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness]]
+ruby pxlsrt.rb smart INPUT OUTPUT --threshold THRESHOLD [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal]
 ```
 
 ### Options and parameters ###
@@ -133,5 +134,17 @@ Sorts by the "distance" of the pixel from the average color of band (excluding t
 
 ```
 avg(colors) = sum(colors) / (length of colors)
-uniqueness(red, green, blue, reds, greens, blues) = sqrt((red-avg(reds))^2+(green-avg(greens))^2+(blue-avg(blues))^2)
+uniqueness(red, green, blue, reds, greens, blues) = sqrt((red - avg(reds))^2 + (green - avg(greens))^2 + (blue - avg(blues))^2)
 ```
+
+### luma ###
+
+Sorts by human color perception (similar to brightness and sum-rgb).
+
+```
+luma(red, green, blue) = red * 0.2126 + green * 0.7152 + blue * 0.0722
+```
+
+### random ###
+
+Randomizes the pixels.

@@ -3,6 +3,21 @@ pxlsrt
 
 Pixel sorter written in Ruby.
 
+## Installation
+
+Requires the installation of [Ruby](https://www.ruby-lang.org/en/) (I use 2.0.0). All commands should be run through the Ruby command line.
+
+```
+git clone https://github.com/EVA-01/pxlsrt.git
+cd pxlsrt
+bundle install
+```
+
+### Dependencies ###
+
+* [Ruby](https://www.ruby-lang.org/en/)
+* [oily_png](https://github.com/wvanbergen/oily_png) (`gem install oily_png` if you don't use [bundler](http://bundler.io/))
+* [Thor](https://github.com/erikhuda/thor) (`gem install thor` if you don't use [bundler](http://bundler.io/))
 
 ## Brute sort ##
 

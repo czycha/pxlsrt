@@ -7,7 +7,7 @@ Pixel sorter written in Ruby.
 ## Brute sort ##
 
 ```
-ruby pxlsrt.rb brute INPUT OUTPUT --min MIN --max MAX [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal]
+ruby pxlsrt.rb brute INPUT OUTPUT --min MIN --max MAX [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal] [--verbose]
 ```
 
 ### Options and parameters ###
@@ -21,6 +21,7 @@ ruby pxlsrt.rb brute INPUT OUTPUT --min MIN --max MAX [--vertical] [--smooth] [-
 * **`--reverse REVERSETYPE`** or **`-r REVERSETYPE`** *(optional string)* - Has three options for `REVERSETYPE`: `no`, `reverse`, and `either`. `no` does not reverse the bands. `reverse` does. `either` has a 50% chance of either reversing or keeping it in the same order. Defaults to `no`.
 * **`--method METHOD`** or **`-m METHOD`** *(optional string)* - Sets the method used to sort the band. In a different section are descriptions of each method. Defaults to `sum-rgb`.
 * **`--diagonal`** or **`-d`** *(optional boolean)* - Sorts pixels diagonally. To reverse the direction of the diagonal, use with `--vertical`. Defaults to `false`.
+* **`--verbose`** *(optional boolean)* - Prints to the terminal what the program is currently doing. Defaults to `false`.
 
 ### Examples ###
 

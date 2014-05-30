@@ -24,6 +24,15 @@ def pxldex(pxl)
 	return pxl[0]+pxl[1]+pxl[2]
 end
 
+class String
+	def colorize(color_code); "\e[#{color_code}m#{self}\e[0m"; end
+	def cyan; colorize(36); end
+end
+
+def verbose(h)
+	puts "#{"pxlsrt".cyan} #{h}" if options[:verbose]
+end
+
 def rgb2hsb(rgb)
 	r = rgb[0] / 255.0
 	g = rgb[1] / 255.0
@@ -191,11 +200,14 @@ class PXLSRT < Thor
 	class_option :smooth, :type => :boolean, :default => false, :aliases => "-s"
 	class_option :method, :type => :string, :default => "sum-rgb", :banner => "[sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]", :aliases => "-m", :enum => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness", "luma", "random"]
 	class_option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
+	class_option :verbose, :type => :boolean, :default => false
 
 	option :min, :type => :numeric, :required => true, :banner => "MINIMUM BANDWIDTH"
 	option :max, :type => :numeric, :required => true, :banner => "MAXIMUM BANDWIDTH"
 	desc "brute INPUT OUTPUT [options]", "Brute pixel sorting"
 	def brute(input, output)
+		verbose "Brute mode."
+		startTime=Time.now
 		case options[:reverse].downcase
 			when "reverse"
 				nre=1
@@ -204,19 +216,25 @@ class PXLSRT < Thor
 			else
 				nre=0
 		end
+		verbose "Loading image from #{input}..."
 		png=ChunkyPNG::Image.from_file(input)
+		verbose "Loaded."
 		if options[:vertical]==true
+			verbose "Rotating image for vertical mode..."
 			png=png.rotate_left
 		end
 		w=png.dimension.width
 		h=png.dimension.height
 		sorted=ChunkyPNG::Image.new(w, h, ChunkyPNG::Color::TRANSPARENT)
+		verbose "Retrieving RGB values of pixels..."
 		kml=[]
 		for xy in 0..(w*h-1)
 			kml.push(getRGB(png[xy % w,(xy/w).floor]))
 		end
 		toImage=[]
 		if !options[:diagonal]
+			verbose "Not diagonal."
+			verbose "Starting pixel sorting..."
 			for m in imageRGBLines(kml, w)
 				sliceRanges=randomSlices(m, options[:min], options[:max])
 				#puts sliceRanges.last.last
@@ -235,8 +253,11 @@ class PXLSRT < Thor
 				end
 				toImage.concat(newInTown)
 			end
+			verbose "Pixels sorted."
 		else
+			verbose "Determining diagonals..."
 			dia=getDiagonals(kml,w,h)
+			verbose "Pixel sorting using method '#{options[:method]}'..."
 			for m in dia.keys
 				sliceRanges=randomSlices(dia[m], options[:min], options[:max])
 				newInTown=[]
@@ -254,15 +275,31 @@ class PXLSRT < Thor
 				end
 				dia[m]=newInTown
 			end
+			verbose "Pixels sorted."
+			verbose "Setting diagonals back to standard lines..."
 			toImage=fromDiagonals(dia,w)
 		end
+		verbose "Giving pixels new RGB values..."
 		for xy in 0..(w*h-1)
 			sorted[xy % w, (xy/w).floor]=arrayToRGB(toImage[xy])
 		end
+		verbose "Done with that."
 		if options[:vertical]==true
+			verbose "Rotating back (because of vertical mode)."
 			sorted=sorted.rotate_right
 		end
+		verbose "Saving to #{output}..."
 		sorted.save(output)
+		verbose "Saved."
+		endTime=Time.now
+		timeElapsed=endTime-startTime
+		if timeElapsed <= 59
+			verbose "Took #{timeElapsed} second#{ timeElapsed!=1 ? "s" : "" }."
+		else
+			minutes=(timeElapsed/60).floor
+			seconds=timeElapsed-minutes
+			verbose "Took #{minutes} minute#{ minutes!=1 ? "s" : "" } and #{seconds} second#{ seconds!=1 ? "s" : "" }."
+		end
 	end
 
 	option :absolute, :type => :boolean, :default => false, :aliases => "-a", :banner => "ABSOLUTE EDGE FINDING"
@@ -270,6 +307,8 @@ class PXLSRT < Thor
 	option :edge, :type => :numeric, :default => 2, :aliases => "-e", :banner => "EDGE BUFFERING"
 	desc "smart INPUT OUTPUT [options]", "Smart pixel sorting"
 	def smart(input, output)
+		verbose "Smart mode."
+		startTime=Time.now
 		case options[:reverse].downcase
 			when "reverse"
 				nre=1
@@ -278,14 +317,18 @@ class PXLSRT < Thor
 			else
 				nre=0
 		end
+		verbose "Loading image from #{input}..."
 		img = ChunkyPNG::Image.from_file(input)
+		verbose "Loaded."
 		if options[:vertical]==true
+			verbose "Rotating image for vertical mode..."
 			img=img.rotate_left
 		end
 		sobel_x = [[-1,0,1], [-2,0,2], [-1,0,1]]
 		sobel_y = [[-1,-2,-1], [ 0, 0, 0], [ 1, 2, 1]]
 		edge = ChunkyPNG::Image.new(img.width, img.height, ChunkyPNG::Color::TRANSPARENT)
 		k=[]
+		verbose "Getting Sobel values and colors for pixels..."
 		for xy in 0..(img.width*img.height-1)
 			x=xy % img.width
 			y=(xy/img.width).floor
@@ -298,9 +341,12 @@ class PXLSRT < Thor
 			end
 			k.push({ "sobel" => val, "pixel" => [x, y], "color" => getRGB(img[x, y]) })
 		end
+		verbose "Done."
 
 		if !options[:diagonal]
+			verbose "Not diagonal."
 			lines=imageRGBLines(k, img.width)
+			verbose "Determining bands with a#{options[:absolute] ? "n absolute" : " relative"} threshold of #{options[:threshold]}..."
 			bands=Array.new()
 			for j in lines
 				slicing=true
@@ -335,6 +381,8 @@ class PXLSRT < Thor
 				end
 				bands.concat(m)
 			end
+			verbose "Bands determined."
+			verbose "Pixel sorting using method '#{options[:method]}'..."
 			image=[]
 			if options[:smooth]
 				for band in bands
@@ -346,8 +394,11 @@ class PXLSRT < Thor
 					image.concat(pixelSort(band, options[:method], nre))
 				end
 			end
+			verbose "Pixels sorted."
 		else
+			verbose "Determining diagonals..."
 			dia=getDiagonals(k,img.width,img.height)
+			verbose "Determining bands with a#{options[:absolute] ? "n absolute" : " relative"} threshold of #{options[:threshold]}..."
 			for j in dia.keys
 				bands=[]
 				if dia[j].length>1
@@ -386,6 +437,8 @@ class PXLSRT < Thor
 				end
 				dia[j]=bands.concat(m)
 			end
+			verbose "Bands determined."
+			verbose "Pixel sorting using method '#{options[:method]}'..."
 			for j in dia.keys
 				ell=[]
 				if options[:smooth]
@@ -401,15 +454,31 @@ class PXLSRT < Thor
 				end
 				dia[j]=ell
 			end
+			verbose "Pixels sorted."
+			verbose "Setting diagonals back to standard lines..."
 			image=fromDiagonals(dia,img.width)
 		end
+		verbose "Giving pixels new RGB values..."
 		for px in 0..(img.width*img.height-1)
 			edge[px % img.width, (px/img.width).floor]=arrayToRGB(image[px])
 		end
+		verbose "Done with that."
 		if options[:vertical]==true
+			verbose "Rotating back (because of vertical mode)."
 			edge=edge.rotate_right
 		end
+		verbose "Saving to #{output}..."
 		edge.save(output)
+		verbose "Saved."
+		endTime=Time.now
+		timeElapsed=endTime-startTime
+		if timeElapsed <= 59
+			verbose "Took #{timeElapsed} second#{ timeElapsed!=1 ? "s" : "" }."
+		else
+			minutes=(timeElapsed/60).floor
+			seconds=timeElapsed-minutes
+			verbose "Took #{minutes} minute#{ minutes!=1 ? "s" : "" } and #{seconds} second#{ seconds!=1 ? "s" : "" }."
+		end
 	end
 end
 

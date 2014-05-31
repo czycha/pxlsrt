@@ -21,6 +21,8 @@ bundle install
 
 ## Brute sort ##
 
+Brute sorting uses a user defined range for bandwidths to sort.
+
 ```
 ruby pxlsrt.rb brute INPUT OUTPUT --min MIN --max MAX [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal] [--verbose]
 ```
@@ -65,6 +67,8 @@ ruby pxlsrt.rb brute input.png output.png --min 20 --max 30 -v -s -r reverse -m 
 Same as above example.
 
 ## Smart sort ##
+
+Smart sorting uses edges detected within the image (determined through [Sobel operators](http://en.wikipedia.org/wiki/Sobel_operator)) along with a user-defined threshold to define bandwidths to sort.
 
 ```
 ruby pxlsrt.rb smart INPUT OUTPUT --threshold THRESHOLD [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal]

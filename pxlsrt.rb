@@ -27,6 +27,7 @@ end
 class String
 	def colorize(color_code); "\e[#{color_code}m#{self}\e[0m"; end
 	def cyan; colorize(36); end
+	def magenta; colorize(35); end
 end
 
 def verbose(h)
@@ -193,6 +194,21 @@ def colorUniqueness(c, ca)
 	return colorDistance(c, colorAverage(ca))
 end
 
+def rotateImageLeft(image,width,height)
+	nu=[]
+	for xy in 0..(image.length-1)
+		nu[((height-1)-(xy/width).floor)+(xy % width)*height]=image[xy]
+	end
+	return nu
+end
+def rotateImageRight(image,width,height)
+	nu=[]
+	for xy in 0..(image.length-1)
+		nu[(xy/width).floor+((width-1)-(xy % width))*height]=image[xy]
+	end
+	return nu
+end
+
 class PXLSRT < Thor
 	class_option :reverse, :type => :string, :default => "no", :banner => "[no | reverse | either]", :aliases => "-r", :enum => ["no", "reverse", "either"]
 	class_option :vertical, :type => :boolean, :default => false, :aliases => "-v"
@@ -219,10 +235,6 @@ class PXLSRT < Thor
 		verbose "Loading image from #{input}..."
 		png=ChunkyPNG::Image.from_file(input)
 		verbose "Loaded."
-		if options[:vertical]==true
-			verbose "Rotating image for vertical mode..."
-			png=png.rotate_left
-		end
 		w=png.dimension.width
 		h=png.dimension.height
 		sorted=ChunkyPNG::Image.new(w, h, ChunkyPNG::Color::TRANSPARENT)
@@ -230,6 +242,11 @@ class PXLSRT < Thor
 		kml=[]
 		for xy in 0..(w*h-1)
 			kml.push(getRGB(png[xy % w,(xy/w).floor]))
+		end
+		if options[:vertical]==true
+			verbose "Rotating image for vertical mode..."
+			kml=rotateImageLeft(kml,w,h)
+			w,h=h,w
 		end
 		toImage=[]
 		if !options[:diagonal]
@@ -279,26 +296,27 @@ class PXLSRT < Thor
 			verbose "Setting diagonals back to standard lines..."
 			toImage=fromDiagonals(dia,w)
 		end
+		if options[:vertical]==true
+			verbose "Rotating back (because of vertical mode)."
+			toImage=rotateImageRight(toImage,w,h)
+			w,h=h,w
+		end
 		verbose "Giving pixels new RGB values..."
 		for xy in 0..(w*h-1)
 			sorted[xy % w, (xy/w).floor]=arrayToRGB(toImage[xy])
 		end
 		verbose "Done with that."
-		if options[:vertical]==true
-			verbose "Rotating back (because of vertical mode)."
-			sorted=sorted.rotate_right
-		end
 		verbose "Saving to #{output}..."
 		sorted.save(output)
 		verbose "Saved."
 		endTime=Time.now
 		timeElapsed=endTime-startTime
-		if timeElapsed <= 59
-			verbose "Took #{timeElapsed} second#{ timeElapsed!=1 ? "s" : "" }."
+		if timeElapsed < 60
+			verbose "Took #{timeElapsed.round(4)} second#{ timeElapsed!=1.0 ? "s" : "" }."
 		else
 			minutes=(timeElapsed/60).floor
-			seconds=timeElapsed-minutes
-			verbose "Took #{minutes} minute#{ minutes!=1 ? "s" : "" } and #{seconds} second#{ seconds!=1 ? "s" : "" }."
+			seconds=(timeElapsed % 60).round(4)
+			verbose "Took #{minutes} minute#{ minutes!=1 ? "s" : "" } and #{seconds} second#{ seconds!=1.0 ? "s" : "" }."
 		end
 	end
 
@@ -319,20 +337,17 @@ class PXLSRT < Thor
 		end
 		verbose "Loading image from #{input}..."
 		img = ChunkyPNG::Image.from_file(input)
+		w,h=img.width,img.height
 		verbose "Loaded."
-		if options[:vertical]==true
-			verbose "Rotating image for vertical mode..."
-			img=img.rotate_left
-		end
 		sobel_x = [[-1,0,1], [-2,0,2], [-1,0,1]]
 		sobel_y = [[-1,-2,-1], [ 0, 0, 0], [ 1, 2, 1]]
-		edge = ChunkyPNG::Image.new(img.width, img.height, ChunkyPNG::Color::TRANSPARENT)
+		edge = ChunkyPNG::Image.new(w, h, ChunkyPNG::Color::TRANSPARENT)
 		k=[]
 		verbose "Getting Sobel values and colors for pixels..."
-		for xy in 0..(img.width*img.height-1)
-			x=xy % img.width
-			y=(xy/img.width).floor
-			if x!=0 and x!=(img.width-1) and y!=0 and y!=(img.height-1)
+		for xy in 0..(w*h-1)
+			x=xy % w
+			y=(xy/w).floor
+			if x!=0 and x!=(w-1) and y!=0 and y!=(h-1)
 				pixel_x=(sobel_x[0][0]*img.at(x-1,y-1))+(sobel_x[0][1]*img.at(x,y-1))+(sobel_x[0][2]*img.at(x+1,y-1))+(sobel_x[1][0]*img.at(x-1,y))+(sobel_x[1][1]*img.at(x,y))+(sobel_x[1][2]*img.at(x+1,y))+(sobel_x[2][0]*img.at(x-1,y+1))+(sobel_x[2][1]*img.at(x,y+1))+(sobel_x[2][2]*img.at(x+1,y+1))
 				pixel_y=(sobel_y[0][0]*img.at(x-1,y-1))+(sobel_y[0][1]*img.at(x,y-1))+(sobel_y[0][2]*img.at(x+1,y-1))+(sobel_y[1][0]*img.at(x-1,y))+(sobel_y[1][1]*img.at(x,y))+(sobel_y[1][2]*img.at(x+1,y))+(sobel_y[2][0]*img.at(x-1,y+1))+(sobel_y[2][1]*img.at(x,y+1))+(sobel_y[2][2]*img.at(x+1,y+1))
 				val = Math.sqrt(pixel_x * pixel_x + pixel_y * pixel_y).ceil
@@ -342,10 +357,14 @@ class PXLSRT < Thor
 			k.push({ "sobel" => val, "pixel" => [x, y], "color" => getRGB(img[x, y]) })
 		end
 		verbose "Done."
-
+		if options[:vertical]==true
+			verbose "Rotating image for vertical mode..."
+			k=rotateImageLeft(k,w,h)
+			w,h=h,w
+		end
 		if !options[:diagonal]
 			verbose "Not diagonal."
-			lines=imageRGBLines(k, img.width)
+			lines=imageRGBLines(k, w)
 			verbose "Determining bands with a#{options[:absolute] ? "n absolute" : " relative"} threshold of #{options[:threshold]}..."
 			bands=Array.new()
 			for j in lines
@@ -397,7 +416,7 @@ class PXLSRT < Thor
 			verbose "Pixels sorted."
 		else
 			verbose "Determining diagonals..."
-			dia=getDiagonals(k,img.width,img.height)
+			dia=getDiagonals(k,w,h)
 			verbose "Determining bands with a#{options[:absolute] ? "n absolute" : " relative"} threshold of #{options[:threshold]}..."
 			for j in dia.keys
 				bands=[]
@@ -456,28 +475,29 @@ class PXLSRT < Thor
 			end
 			verbose "Pixels sorted."
 			verbose "Setting diagonals back to standard lines..."
-			image=fromDiagonals(dia,img.width)
+			image=fromDiagonals(dia,w)
 		end
-		verbose "Giving pixels new RGB values..."
-		for px in 0..(img.width*img.height-1)
-			edge[px % img.width, (px/img.width).floor]=arrayToRGB(image[px])
-		end
-		verbose "Done with that."
 		if options[:vertical]==true
 			verbose "Rotating back (because of vertical mode)."
-			edge=edge.rotate_right
+			image=rotateImageRight(image,w,h)
+			w,h=h,w
 		end
+		verbose "Giving pixels new RGB values..."
+		for px in 0..(w*h-1)
+			edge[px % w, (px/w).floor]=arrayToRGB(image[px])
+		end
+		verbose "Done with that."
 		verbose "Saving to #{output}..."
 		edge.save(output)
 		verbose "Saved."
 		endTime=Time.now
 		timeElapsed=endTime-startTime
-		if timeElapsed <= 59
-			verbose "Took #{timeElapsed} second#{ timeElapsed!=1 ? "s" : "" }."
+		if timeElapsed < 60
+			verbose "Took #{timeElapsed.round(4)} second#{ timeElapsed.round(4)!=1.0 ? "s" : "" }."
 		else
 			minutes=(timeElapsed/60).floor
-			seconds=timeElapsed-minutes
-			verbose "Took #{minutes} minute#{ minutes!=1 ? "s" : "" } and #{seconds} second#{ seconds!=1 ? "s" : "" }."
+			seconds=(timeElapsed % 60).round(4)
+			verbose "Took #{minutes} minute#{ minutes!=1 ? "s" : "" } and #{seconds} second#{ seconds!=1.0 ? "s" : "" }."
 		end
 	end
 end

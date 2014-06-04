@@ -1,6 +1,9 @@
 require 'rubygems'
 require 'oily_png'
 require 'thor'
+require 'json'
+require 'pathname'
+require 'fileutils'
 
 class ChunkyPNG::Image
 	def at(x,y)
@@ -42,13 +45,11 @@ def rgb2hsb(rgb)
 	min = [r, g, b].min
 	delta = max - min
 	v = max * 100
-	 
 	if (max != 0.0)
 		s = delta / max *100
 	else
 		s = 0.0
 	end
-	 
 	if (s == 0.0) 
 		h = 0.0
 	else
@@ -59,9 +60,7 @@ def rgb2hsb(rgb)
 		elsif (b == max)
 			h = 4 + (r - g) / delta
 		end
-	 
 		h *= 60.0
-		
 		if (h < 0)
 			h += 360.0
 		end
@@ -194,19 +193,28 @@ def colorUniqueness(c, ca)
 	return colorDistance(c, colorAverage(ca))
 end
 
-def rotateImageLeft(image,width,height)
-	nu=[]
-	for xy in 0..(image.length-1)
-		nu[((height-1)-(xy/width).floor)+(xy % width)*height]=image[xy]
+class Array
+	def rotateImage(width,height,a)
+		nu=[]
+		case a
+			when 0, 360, 4
+				nu=self
+			when 1, 90
+				for xy in 0..(self.length-1)
+					nu[((height-1)-(xy/width).floor)+(xy % width)*height]=self[xy]
+				end
+			when 2, 180
+				nu=self.reverse
+			when 3, 270
+				for xy in 0..(self.length-1)
+					nu[(xy/width).floor+((width-1)-(xy % width))*height]=self[xy]
+				end
+		end
+		return nu
 	end
-	return nu
-end
-def rotateImageRight(image,width,height)
-	nu=[]
-	for xy in 0..(image.length-1)
-		nu[(xy/width).floor+((width-1)-(xy % width))*height]=image[xy]
+	def rotateImage!(width,height,a)
+		self.replace(self.rotateImage(width,height,a))
 	end
-	return nu
 end
 
 class PXLSRT < Thor
@@ -234,7 +242,6 @@ class PXLSRT < Thor
 		end
 		verbose "Loading image from #{input}..."
 		png=ChunkyPNG::Image.from_file(input)
-		verbose "Loaded."
 		w=png.dimension.width
 		h=png.dimension.height
 		sorted=ChunkyPNG::Image.new(w, h, ChunkyPNG::Color::TRANSPARENT)
@@ -245,12 +252,11 @@ class PXLSRT < Thor
 		end
 		if options[:vertical]==true
 			verbose "Rotating image for vertical mode..."
-			kml=rotateImageLeft(kml,w,h)
+			kml.rotateImage!(w,h,3)
 			w,h=h,w
 		end
 		toImage=[]
 		if !options[:diagonal]
-			verbose "Not diagonal."
 			verbose "Starting pixel sorting..."
 			for m in imageRGBLines(kml, w)
 				sliceRanges=randomSlices(m, options[:min], options[:max])
@@ -270,7 +276,6 @@ class PXLSRT < Thor
 				end
 				toImage.concat(newInTown)
 			end
-			verbose "Pixels sorted."
 		else
 			verbose "Determining diagonals..."
 			dia=getDiagonals(kml,w,h)
@@ -292,23 +297,20 @@ class PXLSRT < Thor
 				end
 				dia[m]=newInTown
 			end
-			verbose "Pixels sorted."
 			verbose "Setting diagonals back to standard lines..."
 			toImage=fromDiagonals(dia,w)
 		end
 		if options[:vertical]==true
 			verbose "Rotating back (because of vertical mode)."
-			toImage=rotateImageRight(toImage,w,h)
+			toImage.rotateImage!(w,h,1)
 			w,h=h,w
 		end
 		verbose "Giving pixels new RGB values..."
 		for xy in 0..(w*h-1)
 			sorted[xy % w, (xy/w).floor]=arrayToRGB(toImage[xy])
 		end
-		verbose "Done with that."
 		verbose "Saving to #{output}..."
 		sorted.save(output)
-		verbose "Saved."
 		endTime=Time.now
 		timeElapsed=endTime-startTime
 		if timeElapsed < 60
@@ -323,6 +325,7 @@ class PXLSRT < Thor
 	option :absolute, :type => :boolean, :default => false, :aliases => "-a", :banner => "ABSOLUTE EDGE FINDING"
 	option :threshold, :type => :numeric, :required => true, :aliases => "-t"
 	option :edge, :type => :numeric, :default => 2, :aliases => "-e", :banner => "EDGE BUFFERING"
+	option :temp, :type => :string, :default => "none", :enum => ["none", "load", "save"]
 	desc "smart INPUT OUTPUT [options]", "Smart pixel sorting"
 	def smart(input, output)
 		verbose "Smart mode."
@@ -338,32 +341,53 @@ class PXLSRT < Thor
 		verbose "Loading image from #{input}..."
 		img = ChunkyPNG::Image.from_file(input)
 		w,h=img.width,img.height
-		verbose "Loaded."
 		sobel_x = [[-1,0,1], [-2,0,2], [-1,0,1]]
 		sobel_y = [[-1,-2,-1], [ 0, 0, 0], [ 1, 2, 1]]
 		edge = ChunkyPNG::Image.new(w, h, ChunkyPNG::Color::TRANSPARENT)
-		k=[]
-		verbose "Getting Sobel values and colors for pixels..."
-		for xy in 0..(w*h-1)
-			x=xy % w
-			y=(xy/w).floor
-			if x!=0 and x!=(w-1) and y!=0 and y!=(h-1)
-				pixel_x=(sobel_x[0][0]*img.at(x-1,y-1))+(sobel_x[0][1]*img.at(x,y-1))+(sobel_x[0][2]*img.at(x+1,y-1))+(sobel_x[1][0]*img.at(x-1,y))+(sobel_x[1][1]*img.at(x,y))+(sobel_x[1][2]*img.at(x+1,y))+(sobel_x[2][0]*img.at(x-1,y+1))+(sobel_x[2][1]*img.at(x,y+1))+(sobel_x[2][2]*img.at(x+1,y+1))
-				pixel_y=(sobel_y[0][0]*img.at(x-1,y-1))+(sobel_y[0][1]*img.at(x,y-1))+(sobel_y[0][2]*img.at(x+1,y-1))+(sobel_y[1][0]*img.at(x-1,y))+(sobel_y[1][1]*img.at(x,y))+(sobel_y[1][2]*img.at(x+1,y))+(sobel_y[2][0]*img.at(x-1,y+1))+(sobel_y[2][1]*img.at(x,y+1))+(sobel_y[2][2]*img.at(x+1,y+1))
-				val = Math.sqrt(pixel_x * pixel_x + pixel_y * pixel_y).ceil
-			else
-				val = Float::INFINITY
+		valued="start"
+		while valued!=true
+			k=[]
+			if options[:temp].downcase!="load" or (options[:temp].downcase=="load" and File.file?("data/#{File.basename(input, '.*')}.json")==false) or valued=="bad json"
+				verbose "Getting Sobel values and colors for pixels..."
+				for xy in 0..(w*h-1)
+					x=xy % w
+					y=(xy/w).floor
+					if x!=0 and x!=(w-1) and y!=0 and y!=(h-1)
+						pixel_x=(sobel_x[0][0]*img.at(x-1,y-1))+(sobel_x[0][1]*img.at(x,y-1))+(sobel_x[0][2]*img.at(x+1,y-1))+(sobel_x[1][0]*img.at(x-1,y))+(sobel_x[1][1]*img.at(x,y))+(sobel_x[1][2]*img.at(x+1,y))+(sobel_x[2][0]*img.at(x-1,y+1))+(sobel_x[2][1]*img.at(x,y+1))+(sobel_x[2][2]*img.at(x+1,y+1))
+						pixel_y=(sobel_y[0][0]*img.at(x-1,y-1))+(sobel_y[0][1]*img.at(x,y-1))+(sobel_y[0][2]*img.at(x+1,y-1))+(sobel_y[1][0]*img.at(x-1,y))+(sobel_y[1][1]*img.at(x,y))+(sobel_y[1][2]*img.at(x+1,y))+(sobel_y[2][0]*img.at(x-1,y+1))+(sobel_y[2][1]*img.at(x,y+1))+(sobel_y[2][2]*img.at(x+1,y+1))
+						val = Math.sqrt(pixel_x * pixel_x + pixel_y * pixel_y).ceil
+					else
+						val = 2000000000
+					end
+					k.push({ "sobel" => val, "pixel" => [x, y], "color" => getRGB(img[x, y]) })
+				end
+				if options[:temp].downcase=="save"
+					dirname = File.dirname("data/#{File.basename(input, '.*')}.json")
+					unless File.directory?(dirname)
+						verbose "Creating temp folder..."
+						FileUtils.mkdir_p(dirname)
+					end
+					verbose "Saving Sobel values to temp folder..."
+					File.open("data/#{File.basename(input, '.*')}.json","w+") { |f| f.write(k.to_json) }
+				end
+				valued=true
+			elsif options[:temp].downcase=="load" and File.file?("data/#{File.basename(input, '.*')}.json")==true and valued=="start"
+				verbose "Loading Sobel values and colors from temp file..."
+				k=JSON.parse(File.read("data/#{File.basename(input, '.*')}.json"))
+				if k.length==(w*h)
+					valued=true
+				else
+					verbose "Uh oh! The temp file has the wrong dimensions!"
+					valued="bad json"
+				end
 			end
-			k.push({ "sobel" => val, "pixel" => [x, y], "color" => getRGB(img[x, y]) })
 		end
-		verbose "Done."
 		if options[:vertical]==true
 			verbose "Rotating image for vertical mode..."
-			k=rotateImageLeft(k,w,h)
+			k.rotateImage!(w,h,3)
 			w,h=h,w
 		end
 		if !options[:diagonal]
-			verbose "Not diagonal."
 			lines=imageRGBLines(k, w)
 			verbose "Determining bands with a#{options[:absolute] ? "n absolute" : " relative"} threshold of #{options[:threshold]}..."
 			bands=Array.new()
@@ -400,7 +424,6 @@ class PXLSRT < Thor
 				end
 				bands.concat(m)
 			end
-			verbose "Bands determined."
 			verbose "Pixel sorting using method '#{options[:method]}'..."
 			image=[]
 			if options[:smooth]
@@ -413,7 +436,6 @@ class PXLSRT < Thor
 					image.concat(pixelSort(band, options[:method], nre))
 				end
 			end
-			verbose "Pixels sorted."
 		else
 			verbose "Determining diagonals..."
 			dia=getDiagonals(k,w,h)
@@ -456,7 +478,6 @@ class PXLSRT < Thor
 				end
 				dia[j]=bands.concat(m)
 			end
-			verbose "Bands determined."
 			verbose "Pixel sorting using method '#{options[:method]}'..."
 			for j in dia.keys
 				ell=[]
@@ -473,23 +494,46 @@ class PXLSRT < Thor
 				end
 				dia[j]=ell
 			end
-			verbose "Pixels sorted."
 			verbose "Setting diagonals back to standard lines..."
 			image=fromDiagonals(dia,w)
 		end
 		if options[:vertical]==true
 			verbose "Rotating back (because of vertical mode)."
-			image=rotateImageRight(image,w,h)
+			image.rotateImage!(w,h,1)
 			w,h=h,w
 		end
 		verbose "Giving pixels new RGB values..."
 		for px in 0..(w*h-1)
 			edge[px % w, (px/w).floor]=arrayToRGB(image[px])
 		end
-		verbose "Done with that."
 		verbose "Saving to #{output}..."
 		edge.save(output)
-		verbose "Saved."
+		endTime=Time.now
+		timeElapsed=endTime-startTime
+		if timeElapsed < 60
+			verbose "Took #{timeElapsed.round(4)} second#{ timeElapsed.round(4)!=1.0 ? "s" : "" }."
+		else
+			minutes=(timeElapsed/60).floor
+			seconds=(timeElapsed % 60).round(4)
+			verbose "Took #{minutes} minute#{ minutes!=1 ? "s" : "" } and #{seconds} second#{ seconds!=1.0 ? "s" : "" }."
+		end
+	end
+	
+	option :file, :type => :string, :default => "?!%false%!?", :aliases => "-f"
+	desc "temp [OPTIONS]", "Clear temp files."
+	def temp
+		startTime=Time.now
+		if options[:file]=="?!%false%!?"
+			verbose "Deleting all files within temp directory..."
+			FileUtils.rm_rf(Dir.glob('data/*'))
+		else
+			if File.file?("data/#{File.basename(options[:file], '.*')}.json")
+				verbose "Deleting temp file..."
+				File.delete("data/#{File.basename(options[:file], '.*')}.json")
+			else
+				verbose "Uh oh! That temp file doesn't exist!"
+			end
+		end
 		endTime=Time.now
 		timeElapsed=endTime-startTime
 		if timeElapsed < 60

@@ -71,7 +71,7 @@ Same as above example.
 Smart sorting uses edges detected within the image (determined through [Sobel operators](http://en.wikipedia.org/wiki/Sobel_operator)) along with a user-defined threshold to define bandwidths to sort.
 
 ```
-ruby pxlsrt.rb smart INPUT OUTPUT --threshold THRESHOLD [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal]
+ruby pxlsrt.rb smart INPUT OUTPUT --threshold THRESHOLD [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal] [--temp [none | save | load]]
 ```
 
 ### Options and parameters ###
@@ -81,6 +81,19 @@ Options that are shared with the brute method are covered there.
 * **`--threshold THRESHOLD`** or **`-t THRESHOLD`** *(required integer)* - Used for edge finding.
 * **`--absolute`** or **`-a`** *(optional boolean)* - A different method for edge finding. Defaults to `false`.
 * **`--edge EDGE`** or **`-e EDGE`** *(optional integer)* - "Softens" edges. Defaults to `2`.
+* **`--temp TEMP`** *(optional string)* - Saves/loads Sobel values and colors to `data/INPUT.json`. Defaults to `none`.
+
+## `temp` ##
+
+Deletes temp data.
+
+```
+ruby pxlsrt.rb temp [--file FILE] [--verbose]
+```
+
+### Options and parameters
+
+* **`--file FILE`** or **`-f FILE`** *(optional string)* - The file to delete data for. You don't need to worry about file suffixes, `file.png` is equivalent to `file` is equivalent to `file.json`. If this option is not declared, defaults to deleting all of the files in the `data` directory.
 
 ## Sorting methods ##
 

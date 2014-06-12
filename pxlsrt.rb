@@ -4,6 +4,7 @@ require 'thor'
 require 'json'
 require 'pathname'
 require 'fileutils'
+require 'base64'
 
 class ChunkyPNG::Image
 	def at(x,y)
@@ -368,12 +369,12 @@ class PXLSRT < Thor
 						FileUtils.mkdir_p(dirname)
 					end
 					verbose "Saving Sobel values to temp folder..."
-					File.open("data/#{File.basename(input, '.*')}.json","w+") { |f| f.write(k.to_json) }
+					File.open("data/#{File.basename(input, '.*')}.json","w+") { |f| f.write(Base64.encode64(k.to_json)) }
 				end
 				valued=true
 			elsif options[:temp].downcase=="load" and File.file?("data/#{File.basename(input, '.*')}.json")==true and valued=="start"
 				verbose "Loading Sobel values and colors from temp file..."
-				k=JSON.parse(File.read("data/#{File.basename(input, '.*')}.json"))
+				k=JSON.parse(Base64.decode64(File.read("data/#{File.basename(input, '.*')}.json")))
 				if k.length==(w*h)
 					valued=true
 				else

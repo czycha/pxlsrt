@@ -227,8 +227,8 @@ class PXLSRT < Thor
 	class_option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
 	class_option :verbose, :type => :boolean, :default => false
 
-	option :min, :type => :numeric, :required => true, :banner => "MINIMUM BANDWIDTH"
-	option :max, :type => :numeric, :required => true, :banner => "MAXIMUM BANDWIDTH"
+	option :min, :type => :numeric, :default => Float::INFINITY, :banner => "MINIMUM BANDWIDTH"
+	option :max, :type => :numeric, :default => Float::INFINITY, :banner => "MAXIMUM BANDWIDTH"
 	desc "brute INPUT OUTPUT [options]", "Brute pixel sorting"
 	def brute(input, output)
 		verbose "Brute mode."
@@ -263,7 +263,7 @@ class PXLSRT < Thor
 				sliceRanges=randomSlices(m, options[:min], options[:max])
 				#puts sliceRanges.last.last
 				newInTown=[]
-				if options[:smooth]==true
+				if options[:smooth]!=true
 					for ranger in sliceRanges
 						newInTown.concat(pixelSort(m[ranger[0]..ranger[1]], options[:method].downcase, nre))
 					end
@@ -284,7 +284,7 @@ class PXLSRT < Thor
 			for m in dia.keys
 				sliceRanges=randomSlices(dia[m], options[:min], options[:max])
 				newInTown=[]
-				if options[:smooth]==true
+				if options[:smooth]!=true
 					for ranger in sliceRanges
 						newInTown.concat(pixelSort(dia[m][ranger[0]..ranger[1]], options[:method].downcase, nre))
 					end

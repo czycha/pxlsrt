@@ -1,0 +1,5 @@
+require "pxlsrt/version"
+require "pxlsrt/colors"
+require "pxlsrt/helpers"
+require "pxlsrt/brute"
+require "pxlsrt/smart"

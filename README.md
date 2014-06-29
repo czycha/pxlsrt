@@ -1,4 +1,4 @@
-pxlsrt
+pxlsrt 1.0.0
 ======
 
 Pixel sorter written in Ruby.
@@ -24,36 +24,36 @@ bundle install
 Brute sorting uses a user defined range for bandwidths to sort.
 
 ```
-ruby pxlsrt.rb brute INPUT OUTPUT --min MIN --max MAX [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal] [--verbose]
+pxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal] [--verbose]
 ```
 
 ### Options and parameters ###
 
 * **`INPUT`** *(required string)* - PNG image that is to be sorted.
 * **`OUTPUT`** *(required string)* - PNG image that is to be output to. Image does not need to exist.
-* **`--min MIN`** *(required integer)* - Minimum length of bandwidth, 1 to infinity. If the length is greater than the dimension of the image, the minimum length is the dimension.
-* **`--max MAX`** *(required integer)* - Maximum length of bandwidth, 1 to infinity. If the length is greater than the dimension of the image, the maximum length is the dimension.
+* **`--min MIN`** *(optional integer)* - Minimum length of bandwidth, 1 to infinity. If the length is greater than the dimension of the image, the minimum length is the dimension. Defaults to `Infinity`.
+* **`--max MAX`** *(optiona; integer)* - Maximum length of bandwidth, 1 to infinity. If the length is greater than the dimension of the image, the maximum length is the dimension. Defaults to `Infinity`.
 * **`--vertical`** or **`-v`** *(optional boolean)* - Sorts vertically instead of horizontally. Defaults to `false`.
 * **`--smooth`** or **`-s`** *(optional boolean)* - Places identical pixels adjacent to each other within the band. Here's why this may be needed. Within a band are the following colors: rgb(0, 255, 0), rgb(0, 0, 0), rgb(0, 255, 0). If you sort by the red value, they will all be in the same area because their red values are all 0. However, they will be arranged into the area as they are ordered in the list. If the band is smoothed, the two rgb(0, 255, 0) pixels will be next to each other. Smoothing does not affect values outside of the band. Defaults to `false`.
 * **`--reverse REVERSETYPE`** or **`-r REVERSETYPE`** *(optional string)* - Has three options for `REVERSETYPE`: `no`, `reverse`, and `either`. `no` does not reverse the bands. `reverse` does. `either` has a 50% chance of either reversing or keeping it in the same order. Defaults to `no`.
 * **`--method METHOD`** or **`-m METHOD`** *(optional string)* - Sets the method used to sort the band. In a different section are descriptions of each method. Defaults to `sum-rgb`.
 * **`--diagonal`** or **`-d`** *(optional boolean)* - Sorts pixels diagonally. To reverse the direction of the diagonal, use with `--vertical`. Defaults to `false`.
-* **`--verbose`** *(optional boolean)* - Prints to the terminal what the program is currently doing. Defaults to `false`.
+* **`--verbose`** or **`-V`** *(optional boolean)* - Prints to the terminal what the program is currently doing. Defaults to `false`.
 
 ### Examples ###
 
 #### Bare minimum ####
 
 ```
-ruby pxlsrt.rb brute input.png output.png --min 20 --max 30
+pxlsrt brute input.png output.png
 ```
 
-Pixel sorts `input.png` horizontally by the sum of its red, green, and blue values with bandwidths from 20 to 30, does not smooth, does not reverse, and outputs to `output.png`.
+Pixel sorts `input.png` horizontally by the sum of its red, green, and blue values with bandwidths across the size width of the image, does not smooth, does not reverse, and outputs to `output.png`.
 
 #### Full suite example ####
 
 ```
-ruby pxlsrt.rb brute input.png output.png --min 20 --max 30 --vertical --smooth --reverse reverse --method hue
+pxlsrt brute input.png output.png --min 20 --max 30 --vertical --smooth --reverse reverse --method hue
 ```
 
 Pixel sorts `input.png` vertically by hue with bandwidths from 20 to 30, smoothes it, reverses direction, and outputs to `output.png`.
@@ -61,7 +61,7 @@ Pixel sorts `input.png` vertically by hue with bandwidths from 20 to 30, smoothe
 #### Full suite shortcut example ####
 
 ```
-ruby pxlsrt.rb brute input.png output.png --min 20 --max 30 -v -s -r reverse -m hue
+pxlsrt brute input.png output.png -v -s -r reverse -m hue
 ```
 
 Same as above example.
@@ -71,29 +71,16 @@ Same as above example.
 Smart sorting uses edges detected within the image (determined through [Sobel operators](http://en.wikipedia.org/wiki/Sobel_operator)) along with a user-defined threshold to define bandwidths to sort.
 
 ```
-ruby pxlsrt.rb smart INPUT OUTPUT --threshold THRESHOLD [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal] [--temp [none | save | load]]
+pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal]
 ```
 
 ### Options and parameters ###
 
 Options that are shared with the brute method are covered there.
 
-* **`--threshold THRESHOLD`** or **`-t THRESHOLD`** *(required integer)* - Used for edge finding.
+* **`--threshold THRESHOLD`** or **`-t THRESHOLD`** *(optional integer)* - Used for edge finding. Defaults to `20`.
 * **`--absolute`** or **`-a`** *(optional boolean)* - A different method for edge finding. Defaults to `false`.
 * **`--edge EDGE`** or **`-e EDGE`** *(optional integer)* - "Softens" edges. Defaults to `2`.
-* **`--temp TEMP`** *(optional string)* - Saves/loads Sobel values and colors to `data/INPUT.json`. Defaults to `none`.
-
-## `temp` ##
-
-Deletes temp data.
-
-```
-ruby pxlsrt.rb temp [--file FILE] [--verbose]
-```
-
-### Options and parameters
-
-* **`--file FILE`** or **`-f FILE`** *(optional string)* - The file to delete data for. You don't need to worry about file suffixes, `file.png` is equivalent to `file` is equivalent to `file.json`. If this option is not declared, defaults to deleting all of the files in the `data` directory.
 
 ## Sorting methods ##
 
@@ -181,3 +168,65 @@ luma(red, green, blue) = red * 0.2126 + green * 0.7152 + blue * 0.0722
 ### random ###
 
 Randomizes the pixels.
+
+## To use within Ruby files
+
+```
+require 'pxlsrt'
+```
+
+### Pxlsrt::Smart and Pxlsrt::Brute
+
+#### Pxlsrt::Brute.brute or Pxlsrt::Smart.smart
+
+```
+Pxlsrt::Brute.brute(input, trusted, options)
+
+Pxlsrt::Smart.smart(input, trusted, options)
+```
+
+* **`input`** *(required string or ChunkyPNG::Image)* - Either a ChunkyPNG image or a string of a path leading to an image.
+* **`trusted`** *(required boolean)* - Whether the `options` are validated or not.
+* **`options`** *(optional hash)* - A hash of options (the same as gone over above).
+
+Example:
+
+```
+img=ChunkyPNG::Image.from_file("path/to/image")
+sorted_img=Pxlsrt::Brute.brute(img, true, :verbose=>true, :min=>20, :diagonal=>true)
+sorted_img.save("path/to/output")
+
+img=ChunkyPNG::Image.from_file("path/to/image")
+sorted_img=Pxlsrt::Smart.smart(img, true, :verbose=>true, :min=>20, :diagonal=>true)
+sorted_img.save("path/to/output")
+```
+
+Alternatively:
+
+```
+Pxlsrt::Brute.brute("path/to/image", true, :verbose=>true, :min=>20, :diagonal=>true).save("path/to/output")
+
+Pxlsrt::Smart.smart("path/to/image", true, :verbose=>true, :min=>20, :diagonal=>true).save("path/to/output")
+```
+
+#### Pxlsrt::Brute.suite or Pxlsrt::Smart.suite
+
+```
+Pxlsrt::Brute.suite(inputFileName, outputFileName, trusted, options)
+
+Pxlsrt::Smart.suite(inputFileName, outputFileName, trusted, options)
+```
+
+* **`inputFileName`** *(required string)* - Path to input image.
+* **`outputFileName`** *(required string)* - Path to output image.
+* **`trusted`** *(required boolean)* - Whether the `options` are valid or not.
+* **`options`** *(optional hash)* - A hash of options (the same as gone over above).
+
+Example:
+
+```
+Pxlsrt::Brute.suite("path/to/image", "path/to/output", true, :verbose=>true, :min=>20, :diagonal=>true)
+
+Pxlsrt::Smart.suite("path/to/image", "path/to/output", true, :verbose=>true, :min=>20, :diagonal=>true)
+```
+

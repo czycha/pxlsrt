@@ -1,3 +1,4 @@
 source 'https://rubygems.org'
-gem 'oily_png'
-gem 'thor'
+
+# Specify your gem's dependencies in pxlsrt.gemspec
+gemspec

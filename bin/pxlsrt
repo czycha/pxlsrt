@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'pxlsrt'
+require 'thor'
+
+class PXLSRT < Thor
+	class_option :reverse, :type => :string, :default => "no", :banner => "[no | reverse | either]", :aliases => "-r", :enum => ["no", "reverse", "either"]
+	class_option :vertical, :type => :boolean, :default => false, :aliases => "-v"
+	class_option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
+	class_option :smooth, :type => :boolean, :default => false, :aliases => "-s"
+	class_option :method, :type => :string, :default => "sum-rgb", :banner => "[sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]", :aliases => "-m", :enum => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness", "luma", "random"]
+	class_option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
+	class_option :verbose, :type => :boolean, :default => false, :aliases => "-V"
+
+	option :min, :type => :numeric, :default => Float::INFINITY, :banner => "MINIMUM BANDWIDTH"
+	option :max, :type => :numeric, :default => Float::INFINITY, :banner => "MAXIMUM BANDWIDTH"
+	desc "brute INPUT OUTPUT [options]", "Brute pixel sorting"
+	def brute(input, output)
+		k={}
+		for o in options.keys
+			k[o.to_sym]=options[o]
+		end
+		Pxlsrt::Brute.suite(input, output, true, k)
+	end
+
+	option :absolute, :type => :boolean, :default => false, :aliases => "-a", :banner => "ABSOLUTE EDGE FINDING"
+	option :threshold, :type => :numeric, :default => 20, :aliases => "-t"
+	option :edge, :type => :numeric, :default => 2, :aliases => "-e", :banner => "EDGE BUFFERING"
+	desc "smart INPUT OUTPUT [options]", "Smart pixel sorting"
+	def smart(input, output)
+		k={}
+		for o in options.keys
+			k[o.to_sym]=options[o]
+		end
+		Pxlsrt::Smart.suite(input, output, true, k)
+	end
+end
+
+PXLSRT.start(ARGV)

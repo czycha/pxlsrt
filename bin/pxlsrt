@@ -4,18 +4,30 @@ require 'rubygems'
 require 'pxlsrt'
 require 'thor'
 
-class PXLSRT < Thor
+##
+# The command line. Created using Thor. Universal options:
+# * reverse - Reverses the bands or randomly reverses or doesn't reverse.
+# * vertical - Sorts vertically.
+# * diagonal - Sorts diagonally. Use with vertical to change the diagonals' orientation.
+# * smooth - "Smoothes" sorted values by grouping identical pixels together.
+# * method - What method to use to sort pixels.
+# * verbose - Have pxlsrt tell you what it's working on.
+# * help - More in depth commands.
+class CLI < Thor
 	class_option :reverse, :type => :string, :default => "no", :banner => "[no | reverse | either]", :aliases => "-r", :enum => ["no", "reverse", "either"]
 	class_option :vertical, :type => :boolean, :default => false, :aliases => "-v"
 	class_option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
 	class_option :smooth, :type => :boolean, :default => false, :aliases => "-s"
 	class_option :method, :type => :string, :default => "sum-rgb", :banner => "[sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]", :aliases => "-m", :enum => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness", "luma", "random"]
-	class_option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
 	class_option :verbose, :type => :boolean, :default => false, :aliases => "-V"
 
 	option :min, :type => :numeric, :default => Float::INFINITY, :banner => "MINIMUM BANDWIDTH"
 	option :max, :type => :numeric, :default => Float::INFINITY, :banner => "MAXIMUM BANDWIDTH"
 	desc "brute INPUT OUTPUT [options]", "Brute pixel sorting"
+	##
+	# Specific options:
+	# * min - Minimum bandwidth.
+	# * max - Maximum bandwidth.
 	def brute(input, output)
 		k={}
 		for o in options.keys
@@ -28,6 +40,11 @@ class PXLSRT < Thor
 	option :threshold, :type => :numeric, :default => 20, :aliases => "-t"
 	option :edge, :type => :numeric, :default => 2, :aliases => "-e", :banner => "EDGE BUFFERING"
 	desc "smart INPUT OUTPUT [options]", "Smart pixel sorting"
+	##
+	# Specific options:
+	# * threshold - Number used in edge finding. Specifics explained under "absolute".
+	# * absolute - Make edge finding absolute over relative. For example, define a range as a collection of values under the threshold. Relative edge finding is when the contrast of the next pixel is larger than the threshold.
+	# * edge - Buffers edge.
 	def smart(input, output)
 		k={}
 		for o in options.keys
@@ -37,4 +54,4 @@ class PXLSRT < Thor
 	end
 end
 
-PXLSRT.start(ARGV)
+CLI.start(ARGV)

@@ -1,14 +1,24 @@
 module Pxlsrt
+	##
+	# Methods not having to do with image or color manipulation.
 	class Helpers
+		##
+		# Determines if a value has content.
 		def self.contented(c)
 			return (c.class!=NilClass and ((defined? c)!="nil") and ((/(\S)/.match("#{c}"))!=nil))
 		end
+		##
+		# Used to output a red string to the terminal.
 		def self.red(what)
 			return "\e[31m#{what}\e[0m"
 		end
+		##
+		# Used to output a cyan string to the terminal.
 		def self.cyan(what)
 			return "\e[36m#{what}\e[0m"
 		end
+		##
+		# Checks if supplied options follow the rules.
 		def self.checkOptions(options, rules)
 			match=true
 			for o in options.keys
@@ -39,9 +49,13 @@ module Pxlsrt
 			end
 			return match
 		end
+		##
+		# Prints an error message.
 		def self.error(what)
 			puts "#{Pxlsrt::Helpers.red("pxlsrt")} #{what}"
 		end
+		##
+		# Prints something.
 		def self.verbose(what)
 			puts "#{Pxlsrt::Helpers.cyan("pxlsrt")} #{what}"
 		end

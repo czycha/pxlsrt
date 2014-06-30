@@ -1,10 +1,23 @@
 require "oily_png"
 
 module Pxlsrt
+	##
+	# Includes color and image operations.
 	class Colors
+		##
+		# Converts a ChunkyPNG pixel into an array of the reg, green, and blue values
 		def self.getRGB(pxl)
 			return [ChunkyPNG::Color.r(pxl), ChunkyPNG::Color.g(pxl), ChunkyPNG::Color.b(pxl)]
 		end
+		##
+		# Check if file is a PNG image. ChunkyPNG only works with PNG images. Eventually, I might use conversion tools to add support, but not right now.
+		def self.isPNG?(path)
+			return File.read(path).bytes==[137, 80, 78, 71, 10]
+		end
+		##
+		# ChunkyPNG's rotation was a little slow and doubled runtime.
+		# This "rotates" an array, based on the width and height.
+		# It uses math and it's really cool, trust me.
 		def self.rotateImage(what, width, height, a)
 			nu=[]
 			case a
@@ -23,9 +36,15 @@ module Pxlsrt
 			end
 			return nu
 		end
+		##
+		# Gets "rows" of an array based on a width
 		def self.imageRGBLines(image, width)
 			return image.each_slice(width).to_a
 		end
+		##
+		# Outputs random slices of an array.
+		# Because of the requirements of pxlsrt, it doesn't actually slice the array, bute returns a range-like array. Example:
+		# [[0, 5], [6, 7], [8, 10]]
 		def self.randomSlices(arr, minLength, maxLength)
 			len=arr.length-1
 			if len!=0
@@ -54,9 +73,13 @@ module Pxlsrt
 			end
 			return nu
 		end
+		##
+		# This is really lame. Adds first three values of an array together.
 		def self.pxldex(pxl)
 			return pxl[0]+pxl[1]+pxl[2]
 		end
+		##
+		# Converts an RGB-like array ([red, green, blue]) into an HSB-like array ([hue, saturation, brightness]).
 		def self.rgb2hsb(rgb)
 			r = rgb[0] / 255.0
 			g = rgb[1] / 255.0
@@ -87,6 +110,8 @@ module Pxlsrt
 			end
 			return [h,s,v]
 		end
+		##
+		# Averages an array of RGB-like arrays.
 		def self.colorAverage(ca)
 			if ca.length==1
 				return ca.first
@@ -96,12 +121,18 @@ module Pxlsrt
 			b=((ca.collect { |c| c[2] }).inject{ |sum, el| sum+el }).to_f / ca.size
 			return [r,g,b]
 		end
+		##
+		# Determines color distance from each other using the Pythagorean theorem.
 		def self.colorDistance(c1,c2)
 			return Math.sqrt((c1[0]-c2[0])**2+(c1[1]-c2[1])**2+(c1[2]-c2[2])**2)
 		end
+		##
+		# Uses a combination of color averaging and color distance to find how "unique" a color is.
 		def self.colorUniqueness(c, ca)
 			return Pxlsrt::Colors.colorDistance(c, Pxlsrt::Colors.colorAverage(ca))
 		end
+		##
+		# Sorts an array of colors based on a method.
 		def self.pixelSort(list, how, reverse)
 			mhm=[]
 			case how.downcase
@@ -139,6 +170,8 @@ module Pxlsrt
 				return rand(0..1)==0 ? mhm : mhm.reverse
 			end
 		end
+		##
+		# Uses math to turn an array into an array of diagonals.
 		def self.getDiagonals(array, width, height)
 			dias={}
 			for x in (1-height)..(width-1)
@@ -152,6 +185,8 @@ module Pxlsrt
 			end
 			return dias
 		end
+		##
+		# Uses math to turn an array of diagonals into a linear array.
 		def self.fromDiagonals(obj, width)
 			ell=[]
 			for k in obj.keys
@@ -173,9 +208,13 @@ module Pxlsrt
 			end
 			return ell
 		end
+		##
+		# Turns an RGB-like array into ChunkyPNG's color
 		def self.arrayToRGB(a)
 			return ChunkyPNG::Color.rgb(a[0], a[1], a[2])
 		end
+		##
+		# Used in determining Sobel values.
 		def self.sobelate(i, x,y)
 			return ChunkyPNG::Color.to_grayscale_bytes(i[x,y]).first
 		end

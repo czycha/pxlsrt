@@ -1,18 +1,22 @@
 require 'rubygems'
 require 'oily_png'
-require 'json'
-require 'pathname'
-require 'fileutils'
-require 'base64'
 
 module Pxlsrt
+	##
+	# Smart sorting uses edge-finding algorithms to create bands to sort,
+	# as opposed to brute sorting which doesn't care for the content or 
+	# edges, just a specified range to create bands.
 	class Smart
+		##
+		# Uses Pxlsrt::Smart.smart to input and output from pne method.
 		def self.suite(inputFileName, outputFileName, trusted, o={})
 			kml=Pxlsrt::Smart.smart(inputFileName, trusted, o)
 			if Pxlsrt::Helpers.contented(kml)
 				kml.save(outputFileName)
 			end
 		end
+		##
+		# The main attraction of the Smart class. Returns a ChunkyPNG::Image that is sorted according to the options provided. Will return nil if it encounters an errors.
 		def self.smart(input, trusted, o={})
 			startTime=Time.now
 			defOptions={
@@ -42,7 +46,17 @@ module Pxlsrt
 				Pxlsrt::Helpers.verbose("Options are all good.") if options[:verbose]
 				if input.class==String
 					Pxlsrt::Helpers.verbose("Getting image from file...") if options[:verbose]
-					input=ChunkyPNG::Image.from_file(input)
+					if File.file?(input)
+						if Pxlsrt::Colors.isPNG?(input)
+							input=ChunkyPNG::Image.from_file(input)
+						else
+							Pxlsrt::Helpers.error("File #{input} is not a valid PNG.") if options[:verbose]
+							return
+						end
+					else
+						Pxlsrt::Helpers.error("File #{input} doesn't exist!") if options[:verbose]
+						return
+					end
 				elsif input.class!=String and input.class!=ChunkyPNG::Image
 					Pxlsrt::Helpers.error("Input is not a filename or ChunkyPNG::Image") if options[:verbose]
 					return

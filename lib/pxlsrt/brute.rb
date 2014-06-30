@@ -2,13 +2,20 @@ require 'rubygems'
 require 'oily_png'
 
 module Pxlsrt
+	##
+	# Brute sorting creates bands for sorting using a range to determine the bandwidths,
+	# as opposed to smart sorting which uses edge-finding to create bands.
 	class Brute
+		##
+		# Uses Pxlsrt::Brute.brute to input and output from one method.
 		def self.suite(inputFileName, outputFileName, trusted, o={})
 			kml=Pxlsrt::Brute.brute(inputFileName, trusted, o)
 			if Pxlsrt::Helpers.contented(kml)
 				kml.save(outputFileName)
 			end
 		end
+		##
+		# The main attraction of the Brute class. Returns a ChunkyPNG::Image that is sorted according to the options provided. Will return nil if it encounters an errors.
 		def self.brute(input, trusted, o={})
 			startTime=Time.now
 			defOptions={
@@ -36,7 +43,17 @@ module Pxlsrt
 				Pxlsrt::Helpers.verbose("Options are all good.") if options[:verbose]
 				if input.class==String
 					Pxlsrt::Helpers.verbose("Getting image from file...") if options[:verbose]
-					input=ChunkyPNG::Image.from_file(input)
+					if File.file?(input)
+						if Pxlsrt::Colors.isPNG?(input)
+							input=ChunkyPNG::Image.from_file(input)
+						else
+							Pxlsrt::Helpers.error("File #{input} is not a valid PNG.") if options[:verbose]
+							return
+						end
+					else
+						Pxlsrt::Helpers.error("File #{input} doesn't exist!") if options[:verbose]
+						return
+					end
 				elsif input.class!=String and input.class!=ChunkyPNG::Image
 					Pxlsrt::Helpers.error("Input is not a filename or ChunkyPNG::Image") if options[:verbose]
 					return

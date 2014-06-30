@@ -1,4 +1,4 @@
-pxlsrt 1.0.0
+pxlsrt [![Gem Version](https://badge.fury.io/rb/pxlsrt.png)](http://badge.fury.io/rb/pxlsrt)
 ======
 
 Pixel sorter written in Ruby. [On RubyGems.](https://rubygems.org/gems/pxlsrt)

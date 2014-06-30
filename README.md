@@ -1,16 +1,14 @@
 pxlsrt 1.0.0
 ======
 
-Pixel sorter written in Ruby.
+Pixel sorter written in Ruby. [On RubyGems.](https://rubygems.org/gems/pxlsrt)
 
 ## Installation
 
 Requires the installation of [Ruby](https://www.ruby-lang.org/en/) (I use 2.0.0). All commands should be run through the Ruby command line.
 
 ```
-git clone https://github.com/EVA-01/pxlsrt.git
-cd pxlsrt
-bundle install
+gem install pxlsrt
 ```
 
 ### Dependencies ###

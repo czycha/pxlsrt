@@ -9,15 +9,15 @@ module Pxlsrt
 	class Smart
 		##
 		# Uses Pxlsrt::Smart.smart to input and output from pne method.
-		def self.suite(inputFileName, outputFileName, trusted, o={})
-			kml=Pxlsrt::Smart.smart(inputFileName, trusted, o)
+		def self.suite(inputFileName, outputFileName, o={})
+			kml=Pxlsrt::Smart.smart(inputFileName, o)
 			if Pxlsrt::Helpers.contented(kml)
 				kml.save(outputFileName)
 			end
 		end
 		##
 		# The main attraction of the Smart class. Returns a ChunkyPNG::Image that is sorted according to the options provided. Will return nil if it encounters an errors.
-		def self.smart(input, trusted, o={})
+		def self.smart(input, o={})
 			startTime=Time.now
 			defOptions={
 				:reverse => "no",
@@ -28,7 +28,8 @@ module Pxlsrt
 				:verbose => false,
 				:absolute => false,
 				:threshold => 20,
-				:edge => 2
+				:edge => 2,
+				:trusted => false
 			}
 			defRules={
 				:reverse => ["no", "reverse", "either"],
@@ -39,10 +40,11 @@ module Pxlsrt
 				:verbose => [false, true],
 				:absolute => [false, true],
 				:threshold => [{:class => [Float, Fixnum]}],
-				:edge => [{:class => [Fixnum]}]
+				:edge => [{:class => [Fixnum]}],
+				:trusted => [false, true]
 			}
 			options=defOptions.merge(o)
-			if o.length==0 or trusted==true or (trusted==false and o.length!=0 and Pxlsrt::Helpers.checkOptions(options, defRules)!=false)
+			if o.length==0 or o[:trusted]==true or (o[:trusted]==false and o.length!=0 and Pxlsrt::Helpers.checkOptions(options, defRules)!=false)
 				Pxlsrt::Helpers.verbose("Options are all good.") if options[:verbose]
 				if input.class==String
 					Pxlsrt::Helpers.verbose("Getting image from file...") if options[:verbose]

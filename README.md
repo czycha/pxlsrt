@@ -178,53 +178,51 @@ require 'pxlsrt'
 #### Pxlsrt::Brute.brute or Pxlsrt::Smart.smart
 
 ```
-Pxlsrt::Brute.brute(input, trusted, options)
+Pxlsrt::Brute.brute(input, options)
 
-Pxlsrt::Smart.smart(input, trusted, options)
+Pxlsrt::Smart.smart(input, options)
 ```
 
 * **`input`** *(required string or ChunkyPNG::Image)* - Either a ChunkyPNG image or a string of a path leading to an image.
-* **`trusted`** *(required boolean)* - Whether the `options` are validated or not.
-* **`options`** *(optional hash)* - A hash of options (the same as gone over above).
+* **`options`** *(optional hash)* - A hash of options (the same as gone over above). Includes the option of `:trusted`, which bypasses the need to check if the options match the rules.
 
 Example:
 
 ```
 img=ChunkyPNG::Image.from_file("path/to/image")
-sorted_img=Pxlsrt::Brute.brute(img, true, :verbose=>true, :min=>20, :diagonal=>true)
+sorted_img=Pxlsrt::Brute.brute(img, :verbose=>true, :min=>20, :diagonal=>true)
 sorted_img.save("path/to/output")
 
 img=ChunkyPNG::Image.from_file("path/to/image")
-sorted_img=Pxlsrt::Smart.smart(img, true, :verbose=>true, :min=>20, :diagonal=>true)
+sorted_img=Pxlsrt::Smart.smart(img, :verbose=>true, :min=>20, :diagonal=>true)
 sorted_img.save("path/to/output")
 ```
 
 Alternatively:
 
 ```
-Pxlsrt::Brute.brute("path/to/image", true, :verbose=>true, :min=>20, :diagonal=>true).save("path/to/output")
+Pxlsrt::Brute.brute("path/to/image", :verbose=>true, :min=>20, :diagonal=>true).save("path/to/output")
 
-Pxlsrt::Smart.smart("path/to/image", true, :verbose=>true, :min=>20, :diagonal=>true).save("path/to/output")
+Pxlsrt::Smart.smart("path/to/image", :verbose=>true, :min=>20, :diagonal=>true).save("path/to/output")
 ```
 
 #### Pxlsrt::Brute.suite or Pxlsrt::Smart.suite
 
 ```
-Pxlsrt::Brute.suite(inputFileName, outputFileName, trusted, options)
+Pxlsrt::Brute.suite(inputFileName, outputFileName, options)
 
-Pxlsrt::Smart.suite(inputFileName, outputFileName, trusted, options)
+Pxlsrt::Smart.suite(inputFileName, outputFileName, options)
 ```
 
 * **`inputFileName`** *(required string)* - Path to input image.
 * **`outputFileName`** *(required string)* - Path to output image.
-* **`trusted`** *(required boolean)* - Whether the `options` are valid or not.
-* **`options`** *(optional hash)* - A hash of options (the same as gone over above).
+* **`options`** *(optional hash)* - A hash of options (the same as gone over above). Includes the option of `:trusted`, which bypasses the need to check if the options match the rules.
 
 Example:
 
 ```
-Pxlsrt::Brute.suite("path/to/image", "path/to/output", true, :verbose=>true, :min=>20, :diagonal=>true)
+Pxlsrt::Brute.suite("path/to/image", "path/to/output", :verbose=>true, :min=>20, :diagonal=>true)
 
-Pxlsrt::Smart.suite("path/to/image", "path/to/output", true, :verbose=>true, :min=>20, :diagonal=>true)
+Pxlsrt::Smart.suite("path/to/image", "path/to/output", :verbose=>true, :min=>20, :diagonal=>true)
 ```
 

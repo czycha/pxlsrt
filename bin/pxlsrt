@@ -29,11 +29,11 @@ class CLI < Thor
 	# * min - Minimum bandwidth.
 	# * max - Maximum bandwidth.
 	def brute(input, output)
-		k={}
+		k={:trusted=>true}
 		for o in options.keys
 			k[o.to_sym]=options[o]
 		end
-		Pxlsrt::Brute.suite(input, output, true, k)
+		Pxlsrt::Brute.suite(input, output, k)
 	end
 
 	option :absolute, :type => :boolean, :default => false, :aliases => "-a", :banner => "ABSOLUTE EDGE FINDING"
@@ -46,11 +46,11 @@ class CLI < Thor
 	# * absolute - Make edge finding absolute over relative. For example, define a range as a collection of values under the threshold. Relative edge finding is when the contrast of the next pixel is larger than the threshold.
 	# * edge - Buffers edge.
 	def smart(input, output)
-		k={}
+		k={:trusted=>true}
 		for o in options.keys
 			k[o.to_sym]=options[o]
 		end
-		Pxlsrt::Smart.suite(input, output, true, k)
+		Pxlsrt::Smart.suite(input, output, k)
 	end
 end
 

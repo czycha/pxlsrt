@@ -44,7 +44,7 @@ module Pxlsrt
 				:trusted => [false, true]
 			}
 			options=defOptions.merge(o)
-			if o.length==0 or o[:trusted]==true or (o[:trusted]==false and o.length!=0 and Pxlsrt::Helpers.checkOptions(options, defRules)!=false)
+			if o.length==0 or options[:trusted]==true or (options[:trusted]==false and o.length!=0 and Pxlsrt::Helpers.checkOptions(options, defRules)!=false)
 				Pxlsrt::Helpers.verbose("Options are all good.") if options[:verbose]
 				if input.class==String
 					Pxlsrt::Helpers.verbose("Getting image from file...") if options[:verbose]

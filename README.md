@@ -22,7 +22,7 @@ gem install pxlsrt
 Brute sorting uses a user defined range for bandwidths to sort.
 
 ```
-pxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal] [--verbose]
+pxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose]
 ```
 
 ### Options and parameters ###
@@ -69,7 +69,7 @@ Same as above example.
 Smart sorting uses edges detected within the image (determined through [Sobel operators](http://en.wikipedia.org/wiki/Sobel_operator)) along with a user-defined threshold to define bandwidths to sort.
 
 ```
-pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]] [--diagonal]
+pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal]
 ```
 
 ### Options and parameters ###
@@ -152,7 +152,7 @@ Sorts by the "distance" of the pixel from the average color of band (excluding t
 
 ```
 avg(colors) = sum(colors) / (length of colors)
-uniqueness(red, green, blue, reds, greens, blues) = sqrt((red - avg(reds))^2 + (green - avg(greens))^2 + (blue - avg(blues))^2)
+uniqueness(red, green, blue, alpha, reds, greens, blues, alphas) = sqrt((red - avg(reds))^2 + (green - avg(greens))^2 + (blue - avg(blues))^2 + (alpha - avg(alphas))^2)
 ```
 
 ### luma ###
@@ -166,6 +166,54 @@ luma(red, green, blue) = red * 0.2126 + green * 0.7152 + blue * 0.0722
 ### random ###
 
 Randomizes the pixels.
+
+### magenta ###
+
+Sorts by a magenta value.
+
+```
+magenta(red, green, blue) = red + blue
+```
+
+### cyan ###
+
+Sorts by a cyan value.
+
+```
+cyan(red, green, blue) = green + blue
+```
+
+### yellow ###
+
+Sorts by a yellow value.
+
+```
+yellow(red, green, blue) = red + green
+```
+
+### alpha ###
+
+Sorts by the opacity (the opposite of transparency) of a pixel. The "A" in RGBA.
+
+```
+alpha(red, green, blue, alpha) = alpha
+```
+
+### sum-rgba ###
+
+Sorts by the sum of the red, green, blue, and alpha values.
+
+```
+sum-rgba(red, green, blue, alpha) = red + green + blue + alpha
+```
+
+### sum-hsba ###
+
+Sorts by the sum of the hue, saturation, brightness, and alpha values.
+
+```
+sum-hsba(hue, saturation, brightness, alpha) = (hue * 100 / 360) + saturation + brightness + alpha * 100 / 255
+```
 
 ## To use within Ruby files
 

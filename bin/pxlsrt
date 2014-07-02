@@ -18,7 +18,7 @@ class CLI < Thor
 	class_option :vertical, :type => :boolean, :default => false, :aliases => "-v"
 	class_option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
 	class_option :smooth, :type => :boolean, :default => false, :aliases => "-s"
-	class_option :method, :type => :string, :default => "sum-rgb", :banner => "[sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random]", :aliases => "-m", :enum => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness", "luma", "random"]
+	class_option :method, :type => :string, :default => "sum-rgb", :banner => "[sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | cyan | magenta | yellow | alpha | sum-rgba | sum-hsba]", :aliases => "-m", :enum => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness", "luma", "random", "cyan", "magenta", "yellow", "alpha", "sum-rgba", "sum-hsba"]
 	class_option :verbose, :type => :boolean, :default => false, :aliases => "-V"
 
 	option :min, :type => :numeric, :default => Float::INFINITY, :banner => "MINIMUM BANDWIDTH"

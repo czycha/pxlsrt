@@ -5,9 +5,9 @@ module Pxlsrt
 	# Includes color and image operations.
 	class Colors
 		##
-		# Converts a ChunkyPNG pixel into an array of the reg, green, and blue values
-		def self.getRGB(pxl)
-			return [ChunkyPNG::Color.r(pxl), ChunkyPNG::Color.g(pxl), ChunkyPNG::Color.b(pxl)]
+		# Converts a ChunkyPNG pixel into an array of the red, green, blue, and alpha values
+		def self.getRGBA(pxl)
+			return [ChunkyPNG::Color.r(pxl), ChunkyPNG::Color.g(pxl), ChunkyPNG::Color.b(pxl), ChunkyPNG::Color.a(pxl)]
 		end
 		##
 		# Check if file is a PNG image. ChunkyPNG only works with PNG images. Eventually, I might use conversion tools to add support, but not right now.
@@ -119,12 +119,13 @@ module Pxlsrt
 			r=((ca.collect { |c| c[0] }).inject{ |sum, el| sum+el }).to_f / ca.size
 			g=((ca.collect { |c| c[1] }).inject{ |sum, el| sum+el }).to_f / ca.size
 			b=((ca.collect { |c| c[2] }).inject{ |sum, el| sum+el }).to_f / ca.size
-			return [r,g,b]
+			a=((ca.collect { |c| c[3] }).inject{ |sum, el| sum+el }).to_f / ca.size
+			return [r,g,b,a]
 		end
 		##
 		# Determines color distance from each other using the Pythagorean theorem.
 		def self.colorDistance(c1,c2)
-			return Math.sqrt((c1[0]-c2[0])**2+(c1[1]-c2[1])**2+(c1[2]-c2[2])**2)
+			return Math.sqrt((c1[0]-c2[0])**2+(c1[1]-c2[1])**2+(c1[2]-c2[2])**2+(c1[3]-c2[3])**2)
 		end
 		##
 		# Uses a combination of color averaging and color distance to find how "unique" a color is.
@@ -133,17 +134,43 @@ module Pxlsrt
 		end
 		##
 		# Sorts an array of colors based on a method.
+		# Available methods:
+		# * sum-rgb (default)
+		# * sum-rgba
+		# * red
+		# * yellow
+		# * green
+		# * cyan
+		# * blue
+		# * magenta
+		# * hue
+		# * saturation
+		# * brightness
+		# * sum-hsb
+		# * sum-hsba
+		# * uniqueness
+		# * luma
+		# * random
+		# * alpha
 		def self.pixelSort(list, how, reverse)
 			mhm=[]
 			case how.downcase
 				when "sum-rgb"
 					mhm= list.sort_by { |c| Pxlsrt::Colors.pxldex(c) }
+				when "sum-rgba"
+					mhm=list.sort_by { |c| Pxlsrt::Colors.pxldex(c)+c[3] }
 				when "red"
 					mhm= list.sort_by { |c| c[0] }
+				when "yellow"
+					mhm=list.sort_by { |c| c[0]+c[1] }
 				when "green"
 					mhm= list.sort_by { |c| c[1] }
+				when "cyan"
+					mhm=list.sort_by { |c| c[1]+c[2] }
 				when "blue"
 					mhm= list.sort_by { |c| c[2] }
+				when "magenta"
+					mhm=list.sort_by { |c| c[0]+c[2] }
 				when "hue"
 					mhm= list.sort_by { |c| Pxlsrt::Colors.rgb2hsb(c)[0] }
 				when "saturation"
@@ -152,6 +179,8 @@ module Pxlsrt
 					mhm= list.sort_by { |c| Pxlsrt::Colors.rgb2hsb(c)[2] }
 				when "sum-hsb"
 					mhm= list.sort_by { |c| k=Pxlsrt::Colors.rgb2hsb(c); k[0]*100/360+k[1]+k[2] }
+				when "sum-hsb"
+					mhm= list.sort_by { |c| k=Pxlsrt::Colors.rgb2hsb(c); k[0]*100/360+k[1]+k[2]+k[3]*100/255 }
 				when "uniqueness"
 					avg=Pxlsrt::Colors.colorAverage(list)
 					mhm=list.sort_by { |c| Pxlsrt::Colors.colorUniqueness(c, [avg]) }
@@ -159,6 +188,8 @@ module Pxlsrt
 					mhm=list.sort_by { |c| Pxlsrt::Colors.pxldex([c[0]*0.2126, c[1]*0.7152, c[2]*0.0722]) }
 				when "random"
 					mhm=list.shuffle
+				when "alpha"
+					mhm=list.sort_by{ |c| c[3] }
 				else
 					mhm= list.sort_by { |c| Pxlsrt::Colors.pxldex(c) }
 			end
@@ -210,8 +241,8 @@ module Pxlsrt
 		end
 		##
 		# Turns an RGB-like array into ChunkyPNG's color
-		def self.arrayToRGB(a)
-			return ChunkyPNG::Color.rgb(a[0], a[1], a[2])
+		def self.arrayToRGBA(a)
+			return ChunkyPNG::Color.rgba(a[0], a[1], a[2], a[3])
 		end
 		##
 		# Used in determining Sobel values.

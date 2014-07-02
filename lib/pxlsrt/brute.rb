@@ -34,7 +34,7 @@ module Pxlsrt
 				:vertical => [false, true],
 				:diagonal => [false, true],
 				:smooth => [false, true],
-				:method => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness", "luma", "random"],
+				:method => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness", "luma", "random", "cyan", "magenta", "yellow", "alpha", "sum-rgba", "sum-hsba"],
 				:verbose => [false, true],
 				:min => [Float::INFINITY, {:class => [Fixnum]}],
 				:max => [Float::INFINITY, {:class => [Fixnum]}],
@@ -76,7 +76,7 @@ module Pxlsrt
 				Pxlsrt::Helpers.verbose("Retrieving RGB values of pixels...") if options[:verbose]
 				kml=[]
 				for xy in 0..(w*h-1)
-					kml.push(Pxlsrt::Colors.getRGB(png[xy % w,(xy/w).floor]))
+					kml.push(Pxlsrt::Colors.getRGBA(png[xy % w,(xy/w).floor]))
 				end
 				if options[:vertical]==true
 					Pxlsrt::Helpers.verbose("Rotating image for vertical mode...") if options[:verbose]
@@ -134,7 +134,7 @@ module Pxlsrt
 				end
 				Pxlsrt::Helpers.verbose("Giving pixels new RGB values...") if options[:verbose]
 				for xy in 0..(w*h-1)
-					sorted[xy % w, (xy/w).floor]=Pxlsrt::Colors.arrayToRGB(toImage[xy])
+					sorted[xy % w, (xy/w).floor]=Pxlsrt::Colors.arrayToRGBA(toImage[xy])
 				end
 				endTime=Time.now
 				timeElapsed=endTime-startTime

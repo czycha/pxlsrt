@@ -169,7 +169,7 @@ Randomizes the pixels.
 
 ## To use within Ruby files
 
-```
+```ruby
 require 'pxlsrt'
 ```
 
@@ -177,7 +177,7 @@ require 'pxlsrt'
 
 #### Pxlsrt::Brute.brute or Pxlsrt::Smart.smart
 
-```
+```ruby
 Pxlsrt::Brute.brute(input, options)
 
 Pxlsrt::Smart.smart(input, options)
@@ -188,7 +188,7 @@ Pxlsrt::Smart.smart(input, options)
 
 Example:
 
-```
+```ruby
 img=ChunkyPNG::Image.from_file("path/to/image")
 sorted_img=Pxlsrt::Brute.brute(img, :verbose=>true, :min=>20, :diagonal=>true)
 sorted_img.save("path/to/output")
@@ -200,7 +200,7 @@ sorted_img.save("path/to/output")
 
 Alternatively:
 
-```
+```ruby
 Pxlsrt::Brute.brute("path/to/image", :verbose=>true, :min=>20, :diagonal=>true).save("path/to/output")
 
 Pxlsrt::Smart.smart("path/to/image", :verbose=>true, :min=>20, :diagonal=>true).save("path/to/output")
@@ -208,7 +208,7 @@ Pxlsrt::Smart.smart("path/to/image", :verbose=>true, :min=>20, :diagonal=>true).
 
 #### Pxlsrt::Brute.suite or Pxlsrt::Smart.suite
 
-```
+```ruby
 Pxlsrt::Brute.suite(inputFileName, outputFileName, options)
 
 Pxlsrt::Smart.suite(inputFileName, outputFileName, options)
@@ -220,7 +220,7 @@ Pxlsrt::Smart.suite(inputFileName, outputFileName, options)
 
 Example:
 
-```
+```ruby
 Pxlsrt::Brute.suite("path/to/image", "path/to/output", :verbose=>true, :min=>20, :diagonal=>true)
 
 Pxlsrt::Smart.suite("path/to/image", "path/to/output", :verbose=>true, :min=>20, :diagonal=>true)

@@ -180,7 +180,7 @@ module Pxlsrt
 				when "sum-hsb"
 					mhm= list.sort_by { |c| k=Pxlsrt::Colors.rgb2hsb(c); k[0]*100.0/360+k[1]+k[2] }
 				when "sum-hsba"
-					mhm= list.sort_by { |c| k=Pxlsrt::Colors.rgb2hsb(c); k[0]*100.0/360+k[1]+k[2]+k[3]*100.0/255 }
+					mhm= list.sort_by { |c| k=Pxlsrt::Colors.rgb2hsb(c); k[0]*100.0/360+k[1]+k[2]+c[3]*100.0/255 }
 				when "uniqueness"
 					avg=Pxlsrt::Colors.colorAverage(list)
 					mhm=list.sort_by { |c| Pxlsrt::Colors.colorUniqueness(c, [avg]) }

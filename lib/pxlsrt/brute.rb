@@ -80,14 +80,14 @@ module Pxlsrt
 				end
 				if options[:vertical]==true
 					Pxlsrt::Helpers.verbose("Rotating image for vertical mode...") if options[:verbose]
-					kml=Pxlsrt::Colors.rotateImage(kml, w, h, 3)
+					kml=Pxlsrt::Lines.rotateImage(kml, w, h, 3)
 					w,h=h,w
 				end
 				toImage=[]
 				if !options[:diagonal]
 					Pxlsrt::Helpers.verbose("Pixel sorting using method '#{options[:method]}'...") if options[:verbose]
-					for m in Pxlsrt::Colors.imageRGBLines(kml, w)
-						sliceRanges=Pxlsrt::Colors.randomSlices(m, options[:min], options[:max])
+					for m in Pxlsrt::Lines.imageRGBLines(kml, w)
+						sliceRanges=Pxlsrt::Lines.randomSlices(m, options[:min], options[:max])
 						newInTown=[]
 						if options[:smooth]!=true
 							for ranger in sliceRanges
@@ -105,10 +105,10 @@ module Pxlsrt
 					end
 				else
 					Pxlsrt::Helpers.verbose("Determining diagonals...") if options[:verbose]
-					dia=Pxlsrt::Colors.getDiagonals(kml,w,h)
+					dia=Pxlsrt::Lines.getDiagonals(kml,w,h)
 					Pxlsrt::Helpers.verbose("Pixel sorting using method '#{options[:method]}'...") if options[:verbose]
 					for m in dia.keys
-						sliceRanges=Pxlsrt::Colors.randomSlices(dia[m], options[:min], options[:max])
+						sliceRanges=Pxlsrt::Lines.randomSlices(dia[m], options[:min], options[:max])
 						newInTown=[]
 						if options[:smooth]!=true
 							for ranger in sliceRanges
@@ -125,11 +125,11 @@ module Pxlsrt
 						dia[m]=newInTown
 					end
 					Pxlsrt::Helpers.verbose("Setting diagonals back to standard lines...") if options[:verbose]
-					toImage=Pxlsrt::Colors.fromDiagonals(dia,w)
+					toImage=Pxlsrt::Lines.fromDiagonals(dia,w)
 				end
 				if options[:vertical]==true
 					Pxlsrt::Helpers.verbose("Rotating back (because of vertical mode).") if options[:verbose]
-					toImage=Pxlsrt::Colors.rotateImage(toImage, w,h,1)
+					toImage=Pxlsrt::Lines.rotateImage(toImage, w,h,1)
 					w,h=h,w
 				end
 				Pxlsrt::Helpers.verbose("Giving pixels new RGB values...") if options[:verbose]

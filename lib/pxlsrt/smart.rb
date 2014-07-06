@@ -80,12 +80,22 @@ module Pxlsrt
 				valued="start"
 				k=[]
 				Pxlsrt::Helpers.verbose("Getting Sobel values and colors for pixels...") if options[:verbose]
+				grey=img.grayscale
 				for xy in 0..(w*h-1)
 					x=xy % w
 					y=(xy/w).floor
 					if x!=0 and x!=(w-1) and y!=0 and y!=(h-1)
-						pixel_x=(sobel_x[0][0]*Pxlsrt::Colors.sobelate(img,x-1,y-1))+(sobel_x[0][1]*Pxlsrt::Colors.sobelate(img,x,y-1))+(sobel_x[0][2]*Pxlsrt::Colors.sobelate(img,x+1,y-1))+(sobel_x[1][0]*Pxlsrt::Colors.sobelate(img,x-1,y))+(sobel_x[1][1]*Pxlsrt::Colors.sobelate(img,x,y))+(sobel_x[1][2]*Pxlsrt::Colors.sobelate(img,x+1,y))+(sobel_x[2][0]*Pxlsrt::Colors.sobelate(img,x-1,y+1))+(sobel_x[2][1]*Pxlsrt::Colors.sobelate(img,x,y+1))+(sobel_x[2][2]*Pxlsrt::Colors.sobelate(img,x+1,y+1))
-						pixel_y=(sobel_y[0][0]*Pxlsrt::Colors.sobelate(img,x-1,y-1))+(sobel_y[0][1]*Pxlsrt::Colors.sobelate(img,x,y-1))+(sobel_y[0][2]*Pxlsrt::Colors.sobelate(img,x+1,y-1))+(sobel_y[1][0]*Pxlsrt::Colors.sobelate(img,x-1,y))+(sobel_y[1][1]*Pxlsrt::Colors.sobelate(img,x,y))+(sobel_y[1][2]*Pxlsrt::Colors.sobelate(img,x+1,y))+(sobel_y[2][0]*Pxlsrt::Colors.sobelate(img,x-1,y+1))+(sobel_y[2][1]*Pxlsrt::Colors.sobelate(img,x,y+1))+(sobel_y[2][2]*Pxlsrt::Colors.sobelate(img,x+1,y+1))
+						t1=ChunkyPNG::Color.r(grey[x-1,y-1])
+						t2=ChunkyPNG::Color.r(grey[x,y-1])
+						t3=ChunkyPNG::Color.r(grey[x+1,y-1])
+						t4=ChunkyPNG::Color.r(grey[x-1,y])
+						t5=ChunkyPNG::Color.r(grey[x,y])
+						t6=ChunkyPNG::Color.r(grey[x+1,y])
+						t7=ChunkyPNG::Color.r(grey[x-1,y+1])
+						t8=ChunkyPNG::Color.r(grey[x,y+1])
+						t9=ChunkyPNG::Color.r(grey[x+1,y+1])
+						pixel_x=(sobel_x[0][0]*t1)+(sobel_x[0][1]*t2)+(sobel_x[0][2]*t3)+(sobel_x[1][0]*t4)+(sobel_x[1][1]*t5)+(sobel_x[1][2]*t6)+(sobel_x[2][0]*t7)+(sobel_x[2][1]*t8)+(sobel_x[2][2]*t9)
+						pixel_y=(sobel_y[0][0]*t1)+(sobel_y[0][1]*t2)+(sobel_y[0][2]*t3)+(sobel_y[1][0]*t4)+(sobel_y[1][1]*t5)+(sobel_y[1][2]*t6)+(sobel_y[2][0]*t7)+(sobel_y[2][1]*t8)+(sobel_y[2][2]*t9)
 						val = Math.sqrt(pixel_x * pixel_x + pixel_y * pixel_y).ceil
 					else
 						val = 2000000000
@@ -94,11 +104,11 @@ module Pxlsrt
 				end
 				if options[:vertical]==true
 					Pxlsrt::Helpers.verbose("Rotating image for vertical mode...") if options[:verbose]
-					k=Pxlsrt::Colors.rotateImage(k,w,h,3)
+					k=Pxlsrt::Lines.rotateImage(k,w,h,3)
 					w,h=h,w
 				end
 				if !options[:diagonal]
-					lines=Pxlsrt::Colors.imageRGBLines(k, w)
+					lines=Pxlsrt::Lines.imageRGBLines(k, w)
 					Pxlsrt::Helpers.verbose("Determining bands with a#{options[:absolute] ? "n absolute" : " relative"} threshold of #{options[:threshold]}...") if options[:verbose]
 					bands=Array.new()
 					for j in lines
@@ -148,7 +158,7 @@ module Pxlsrt
 					end
 				else
 					Pxlsrt::Helpers.verbose("Determining diagonals...") if options[:verbose]
-					dia=Pxlsrt::Colors.getDiagonals(k,w,h)
+					dia=Pxlsrt::Lines.getDiagonals(k,w,h)
 					Pxlsrt::Helpers.verbose("Determining bands with a#{options[:absolute] ? "n absolute" : " relative"} threshold of #{options[:threshold]}...") if options[:verbose]
 					for j in dia.keys
 						bands=[]
@@ -204,11 +214,11 @@ module Pxlsrt
 						dia[j]=ell
 					end
 					Pxlsrt::Helpers.verbose("Setting diagonals back to standard lines...") if options[:verbose]
-					image=Pxlsrt::Colors.fromDiagonals(dia,w)
+					image=Pxlsrt::Lines.fromDiagonals(dia,w)
 				end
 				if options[:vertical]==true
 					Pxlsrt::Helpers.verbose("Rotating back (because of vertical mode).") if options[:verbose]
-					image=Pxlsrt::Colors.rotateImage(image,w,h,1)
+					image=Pxlsrt::Lines.rotateImage(image,w,h,1)
 					w,h=h,w
 				end
 				Pxlsrt::Helpers.verbose("Giving pixels new RGB values...") if options[:verbose]

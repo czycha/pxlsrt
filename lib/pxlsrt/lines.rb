@@ -25,13 +25,29 @@ module Pxlsrt
 			return nu
 		end
 		##
+		# Some fancy rearranging.
+		# [a, b, c, d, e] -> [d, b, a, c, e]
+		# [a, b, c, d] -> [c, a, b, d]
+		def self.middlate(arr)
+			a=[]
+			f=(arr.length/2.0).ceil-1
+			for e in 1..arr.length
+				if (arr.length+e)%2==0
+					a[f+(e/2.0).floor]=arr[e-1]
+				elsif (arr.length+e)%2==1
+					a[f-(e/2.0).floor]=arr[e-1]
+				end
+			end
+			return a
+		end
+		##
 		# Gets "rows" of an array based on a width
 		def self.imageRGBLines(image, width)
 			return image.each_slice(width).to_a
 		end
 		##
 		# Outputs random slices of an array.
-		# Because of the requirements of pxlsrt, it doesn't actually slice the array, bute returns a range-like array. Example:
+		# Because of the requirements of pxlsrt, it doesn't actually slice the array, but returns a range-like array. Example:
 		# [[0, 5], [6, 7], [8, 10]]
 		def self.randomSlices(arr, minLength, maxLength)
 			len=arr.length-1

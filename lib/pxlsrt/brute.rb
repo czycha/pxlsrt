@@ -27,7 +27,8 @@ module Pxlsrt
 				:verbose => false,
 				:min => Float::INFINITY,
 				:max => Float::INFINITY,
-				:trusted => false
+				:trusted => false,
+				:middle => false
 			}
 			defRules={
 				:reverse => ["no", "reverse", "either"],
@@ -38,7 +39,8 @@ module Pxlsrt
 				:verbose => [false, true],
 				:min => [Float::INFINITY, {:class => [Fixnum]}],
 				:max => [Float::INFINITY, {:class => [Fixnum]}],
-				:trusted => [false, true]
+				:trusted => [false, true],
+				:middle => [false, true]
 			}
 			options=defOptions.merge(o)
 			if o.length==0 or options[:trusted]==true or (options[:trusted]==false and o.length!=0 and Pxlsrt::Helpers.checkOptions(options, defRules)!=false)
@@ -91,12 +93,14 @@ module Pxlsrt
 						newInTown=[]
 						if options[:smooth]!=true
 							for ranger in sliceRanges
-								newInTown.concat(Pxlsrt::Colors.pixelSort(m[ranger[0]..ranger[1]], options[:method].downcase, nre))
+								newInTown.concat(Pxlsrt::Lines.middlate(Pxlsrt::Colors.pixelSort(m[ranger[0]..ranger[1]], options[:method].downcase, nre))) if options[:middle]
+								newInTown.concat(Pxlsrt::Colors.pixelSort(m[ranger[0]..ranger[1]], options[:method].downcase, nre)) if !options[:middle]
 							end
 						else
 							for ranger in sliceRanges
 								k=(m[ranger[0]..ranger[1]]).group_by { |x| x }
 								g=Pxlsrt::Colors.pixelSort(k.keys, options[:method].downcase, nre)
+								g=Pxlsrt::Lines.middlate(g) if options[:middle]
 								j=g.map { |x| k[x] }.flatten(1)
 								newInTown.concat(j)
 							end
@@ -112,12 +116,14 @@ module Pxlsrt
 						newInTown=[]
 						if options[:smooth]!=true
 							for ranger in sliceRanges
-								newInTown.concat(Pxlsrt::Colors.pixelSort(dia[m][ranger[0]..ranger[1]], options[:method].downcase, nre))
+								newInTown.concat(Pxlsrt::Lines.middlate(Pxlsrt::Colors.pixelSort(dia[m][ranger[0]..ranger[1]], options[:method].downcase, nre))) if options[:middle]
+								newInTown.concat(Pxlsrt::Colors.pixelSort(dia[m][ranger[0]..ranger[1]], options[:method].downcase, nre)) if !options[:middle]
 							end
 						else
 							for ranger in sliceRanges
 								k=(dia[m][ranger[0]..ranger[1]]).group_by { |x| x }
 								g=Pxlsrt::Colors.pixelSort(k.keys, options[:method].downcase, nre)
+								g=Pxlsrt::Lines.middlate(g) if options[:middle]
 								j=g.map { |x| k[x] }.flatten(1)
 								newInTown.concat(j)
 							end

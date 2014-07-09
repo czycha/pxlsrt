@@ -29,7 +29,8 @@ module Pxlsrt
 				:absolute => false,
 				:threshold => 20,
 				:edge => 2,
-				:trusted => false
+				:trusted => false,
+				:middle => false
 			}
 			defRules={
 				:reverse => ["no", "reverse", "either"],
@@ -41,7 +42,8 @@ module Pxlsrt
 				:absolute => [false, true],
 				:threshold => [{:class => [Float, Fixnum]}],
 				:edge => [{:class => [Fixnum]}],
-				:trusted => [false, true]
+				:trusted => [false, true],
+				:middle => [false, true]
 			}
 			options=defOptions.merge(o)
 			if o.length==0 or options[:trusted]==true or (options[:trusted]==false and o.length!=0 and Pxlsrt::Helpers.checkOptions(options, defRules)!=false)
@@ -149,11 +151,13 @@ module Pxlsrt
 					if options[:smooth]
 						for band in bands
 							u=band.group_by {|x| x}
-							image.concat(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1))
+							image.concat(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1)) if !options[:middle]
+							image.concat(Pxlsrt::Lines(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1))) if options[:middle]
 						end
 					else
 						for band in bands
-							image.concat(Pxlsrt::Colors.pixelSort(band, options[:method], nre))
+							image.concat(Pxlsrt::Colors.pixelSort(band, options[:method], nre)) if !options[:middle]
+							image.concat(Pxlsrt::Lines.middlate(Pxlsrt::Colors.pixelSort(band, options[:method], nre))) if options[:middle]
 						end
 					end
 				else
@@ -204,11 +208,13 @@ module Pxlsrt
 						if options[:smooth]
 							for band in dia[j]
 								u=band.group_by {|x| x}
-								ell.concat(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1))
+								ell.concat(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1)) if !options[:middle]
+								ell.concat(Pxlsrt::Lines.middlate(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1))) if options[:middle]
 							end
 						else
 							for band in dia[j]
-								ell.concat(Pxlsrt::Colors.pixelSort(band, options[:method], nre))
+								ell.concat(Pxlsrt::Colors.pixelSort(band, options[:method], nre)) if !options[:middle]
+								ell.concat(Pxlsrt::Lines.middlate(Pxlsrt::Colors.pixelSort(band, options[:method], nre))) if options[:middle]
 							end
 						end
 						dia[j]=ell

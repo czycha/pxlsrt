@@ -22,7 +22,7 @@ gem install pxlsrt
 Brute sorting uses a user defined range for bandwidths to sort.
 
 ```
-pxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose] [--middle]
+pxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose] [--middle [integer]]
 ```
 
 ### Options and parameters ###
@@ -37,7 +37,7 @@ pxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--smooth] [--rev
 * **`--method METHOD`** or **`-m METHOD`** *(optional string)* - Sets the method used to sort the band. In a different section are descriptions of each method. Defaults to `sum-rgb`.
 * **`--diagonal`** or **`-d`** *(optional boolean)* - Sorts pixels diagonally. To reverse the direction of the diagonal, use with `--vertical`. Defaults to `false`.
 * **`--verbose`** or **`-V`** *(optional boolean)* - Prints to the terminal what the program is currently doing. Defaults to `false`.
-* **`--middle`** or **`-M`** *(optional boolean)* - Has it sorted from the middle out, kind of like a sunrise gradient. Defaults to `false`.
+* **`--middle`** or **`-M`** *(optional boolean or integer)* - Has it sorted from the middle out, kind of like a sunrise gradient. Enter in a positive or negative integer n and it will "middlate" |n| times (if n is negative, it will work backwards). Leave blank to "middlate" once. Defaults to `false`.
 
 ### Examples ###
 
@@ -70,7 +70,7 @@ Same as above example.
 Smart sorting uses edges detected within the image (determined through [Sobel operators](http://en.wikipedia.org/wiki/Sobel_operator)) along with a user-defined threshold to define bandwidths to sort.
 
 ```
-pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose] [--middle]
+pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose] [--middle [integer]]
 ```
 
 ### Options and parameters ###

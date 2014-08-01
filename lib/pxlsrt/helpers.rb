@@ -18,6 +18,11 @@ module Pxlsrt
 			return "\e[36m#{what}\e[0m"
 		end
 		##
+		# Determines if a string can be a float or integer.
+		def self.isNumeric?(s)
+			true if Float(s) rescue false
+		end
+		##
 		# Checks if supplied options follow the rules.
 		def self.checkOptions(options, rules)
 			match=true
@@ -41,6 +46,8 @@ module Pxlsrt
 							end
 						end
 					end
+				elsif rules[o] == :anything
+					o_match = true
 				end
 				match=(match and o_match)
 				if match==false

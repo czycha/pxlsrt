@@ -15,11 +15,6 @@ module Pxlsrt
 			return File.read(path).bytes==[137, 80, 78, 71, 10]
 		end
 		##
-		# This is really lame. Adds first three values of an array together.
-		def self.pxldex(pxl)
-			return pxl[0]+pxl[1]+pxl[2]
-		end
-		##
 		# Converts an RGB-like array ([red, green, blue]) into an HSB-like array ([hue, saturation, brightness]).
 		def self.rgb2hsb(rgb)
 			r = rgb[0] / 255.0
@@ -97,9 +92,9 @@ module Pxlsrt
 			mhm=[]
 			case how.downcase
 				when "sum-rgb"
-					mhm= list.sort_by { |c| Pxlsrt::Colors.pxldex(c) }
+					mhm= list.sort_by { |c| c[0]+c[1]+c[2] }
 				when "sum-rgba"
-					mhm=list.sort_by { |c| Pxlsrt::Colors.pxldex(c)+c[3] }
+					mhm=list.sort_by { |c| c[0]+c[1]+c[2]+c[3] }
 				when "red"
 					mhm= list.sort_by { |c| c[0] }
 				when "yellow"
@@ -126,13 +121,13 @@ module Pxlsrt
 					avg=Pxlsrt::Colors.colorAverage(list)
 					mhm=list.sort_by { |c| Pxlsrt::Colors.colorUniqueness(c, [avg]) }
 				when "luma"
-					mhm=list.sort_by { |c| Pxlsrt::Colors.pxldex([c[0]*0.2126, c[1]*0.7152, c[2]*0.0722]) }
+					mhm=list.sort_by { |c| c[0]*0.2126+c[1]*0.7152+c[2]*0.0722 }
 				when "random"
 					mhm=list.shuffle
 				when "alpha"
 					mhm=list.sort_by{ |c| c[3] }
 				else
-					mhm= list.sort_by { |c| Pxlsrt::Colors.pxldex(c) }
+					mhm= list.sort_by { |c| c[0]+c[1]+c[2] }
 			end
 			if reverse == 0
 				return mhm

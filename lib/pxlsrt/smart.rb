@@ -3,9 +3,9 @@ require 'oily_png'
 
 module Pxlsrt
 	##
-	# Smart sorting uses edge-finding algorithms to create bands to sort,
+	# Smart sorting uses sorted-finding algorithms to create bands to sort,
 	# as opposed to brute sorting which doesn't care for the content or 
-	# edges, just a specified range to create bands.
+	# sorteds, just a specified range to create bands.
 	class Smart
 		##
 		# Uses Pxlsrt::Smart.smart to input and output from pne method.
@@ -28,7 +28,7 @@ module Pxlsrt
 				:verbose => false,
 				:absolute => false,
 				:threshold => 20,
-				:edge => 2,
+				:sorted => 2,
 				:trusted => false,
 				:middle => false
 			}
@@ -41,9 +41,9 @@ module Pxlsrt
 				:verbose => [false, true],
 				:absolute => [false, true],
 				:threshold => [{:class => [Float, Fixnum]}],
-				:edge => [{:class => [Fixnum]}],
+				:sorted => [{:class => [Fixnum]}],
 				:trusted => [false, true],
-				:middle => [false, true]
+				:middle => :anything
 			}
 			options=defOptions.merge(o)
 			if o.length==0 or options[:trusted]==true or (options[:trusted]==false and o.length!=0 and Pxlsrt::Helpers.checkOptions(options, defRules)!=false)
@@ -151,13 +151,11 @@ module Pxlsrt
 					if options[:smooth]
 						for band in bands
 							u=band.group_by {|x| x}
-							image.concat(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1)) if !options[:middle]
-							image.concat(Pxlsrt::Lines(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1))) if options[:middle]
+							image.concat(Pxlsrt::Lines.handleMiddlate(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1), options[:middle]))
 						end
 					else
 						for band in bands
-							image.concat(Pxlsrt::Colors.pixelSort(band, options[:method], nre)) if !options[:middle]
-							image.concat(Pxlsrt::Lines.middlate(Pxlsrt::Colors.pixelSort(band, options[:method], nre))) if options[:middle]
+							image.concat(Pxlsrt::Lines.handleMiddlate(Pxlsrt::Colors.pixelSort(band, options[:method], nre), options[:middle]))
 						end
 					end
 				else
@@ -208,13 +206,11 @@ module Pxlsrt
 						if options[:smooth]
 							for band in dia[j]
 								u=band.group_by {|x| x}
-								ell.concat(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1)) if !options[:middle]
-								ell.concat(Pxlsrt::Lines.middlate(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1))) if options[:middle]
+								ell.concat(Pxlsrt::Lines.handleMiddlate(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1), options[:middle]))
 							end
 						else
 							for band in dia[j]
-								ell.concat(Pxlsrt::Colors.pixelSort(band, options[:method], nre)) if !options[:middle]
-								ell.concat(Pxlsrt::Lines.middlate(Pxlsrt::Colors.pixelSort(band, options[:method], nre))) if options[:middle]
+								ell.concat(Pxlsrt::Lines.handleMiddlate(Pxlsrt::Colors.pixelSort(band, options[:method], nre), options[:middle]))
 							end
 						end
 						dia[j]=ell

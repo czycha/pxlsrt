@@ -30,15 +30,53 @@ module Pxlsrt
 		# [a, b, c, d] -> [c, a, b, d]
 		def self.middlate(arr)
 			a=[]
-			f=(arr.length/2.0).ceil-1
-			for e in 1..arr.length
-				if (arr.length+e)%2==0
-					a[f+(e/2.0).floor]=arr[e-1]
-				elsif (arr.length+e)%2==1
-					a[f-(e/2.0).floor]=arr[e-1]
+			for e in 0...arr.length
+				if (arr.length+e) % 2 == 1
+					a[0.5*(arr.length+e-1)]=arr[e]
+				elsif (arr.length+e) % 2 == 0
+					a[0.5*(arr.length-e)-1]=arr[e]
 				end
 			end
 			return a
+		end
+		##
+		# Some fancy unrearranging.
+		# [d, b, a, c, e] -> [a, b, c, d, e]
+		# [c, a, b, d] -> [a, b, c, d]
+		def self.reverseMiddlate(arr)
+			a=[]
+			for e in 0...arr.length
+				if e == ((arr.length/2.0).ceil - 1)
+					a[0] = arr[e]
+				elsif e < ((arr.length/2.0).ceil - 1)
+					a[arr.length - 2*e - 2] = arr[e]
+				elsif e > ((arr.length/2.0).ceil - 1)
+					a[2*e - arr.length + 1] = arr[e]
+				end
+			end
+			return a
+		end
+		##
+		# Handle middlate requests
+		def self.handleMiddlate(arr, d)
+			n = Pxlsrt::Helpers.isNumeric?(d)
+			if n and d.to_i > 0
+				k = arr
+				for l in 0...(d.to_i)
+					k = Pxlsrt::Lines.middlate(k)
+				end
+				return k
+			elsif n and d.to_i < 0
+				k = arr
+				for l in 0...(d.to_i.abs)
+					k = Pxlsrt::Lines.reverseMiddlate(k)
+				end
+				return k
+			elsif d == "" or d == "middle"
+				return Pxlsrt::Lines.middlate(arr)
+			else
+				return arr
+			end
 		end
 		##
 		# Gets "rows" of an array based on a width

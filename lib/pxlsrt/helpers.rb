@@ -57,6 +57,30 @@ module Pxlsrt
 			return match
 		end
 		##
+		# Pixel sorting helper to eliminate repetition.
+		def self.handlePixelSort(band, o)
+			if o[:reverse].downcase == "reverse"
+				reverse = 1
+			elsif o[:reverse].downcase == "either"
+				reverse = -1
+			else
+				reverse = 0
+			end
+			if o[:smooth]
+				u = band.group_by { |x| x }
+				k = u.keys
+			else
+				k = band
+			end
+			sortedBand = Pxlsrt::Colors.pixelSort(
+				k,
+				o[:method],
+				reverse
+			)
+			sortedBand = sortedBand.map { |x| u[x] }.flatten(1) if o[:smooth]
+			return Pxlsrt::Lines.handleMiddlate(sortedBand, o[:middle])
+		end
+		##
 		# Prints an error message.
 		def self.error(what)
 			puts "#{Pxlsrt::Helpers.red("pxlsrt")} #{what}"

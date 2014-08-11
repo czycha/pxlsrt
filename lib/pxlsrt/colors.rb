@@ -48,25 +48,37 @@ module Pxlsrt
 		end
 		##
 		# Averages an array of RGB-like arrays.
-		def self.colorAverage(ca)
+		def self.colorAverage(ca, chunky = false)
 			if ca.length==1
 				return ca.first
 			end
-			r=((ca.collect { |c| c[0] }).inject{ |sum, el| sum+el }).to_f / ca.size
-			g=((ca.collect { |c| c[1] }).inject{ |sum, el| sum+el }).to_f / ca.size
-			b=((ca.collect { |c| c[2] }).inject{ |sum, el| sum+el }).to_f / ca.size
-			a=((ca.collect { |c| c[3] }).inject{ |sum, el| sum+el }).to_f / ca.size
-			return [r,g,b,a]
+			if !chunky
+				r=((ca.collect { |c| c[0] }).inject{ |sum, el| sum+el }).to_f / ca.size
+				g=((ca.collect { |c| c[1] }).inject{ |sum, el| sum+el }).to_f / ca.size
+				b=((ca.collect { |c| c[2] }).inject{ |sum, el| sum+el }).to_f / ca.size
+				a=((ca.collect { |c| c[3] }).inject{ |sum, el| sum+el }).to_f / ca.size
+				return [r,g,b,a]
+			else
+				r=((ca.collect { |c| ChunkyPNG::Color.r(c) }).inject{ |sum, el| sum+el }).to_f / ca.size
+				g=((ca.collect { |c| ChunkyPNG::Color.g(c) }).inject{ |sum, el| sum+el }).to_f / ca.size
+				b=((ca.collect { |c| ChunkyPNG::Color.b(c) }).inject{ |sum, el| sum+el }).to_f / ca.size
+				a=((ca.collect { |c| ChunkyPNG::Color.a(c) }).inject{ |sum, el| sum+el }).to_f / ca.size
+				return ChunkyPNG::Color.rgba(r,g,b,a)
+			end
 		end
 		##
 		# Determines color distance from each other using the Pythagorean theorem.
-		def self.colorDistance(c1,c2)
-			return Math.sqrt((c1[0]-c2[0])**2+(c1[1]-c2[1])**2+(c1[2]-c2[2])**2+(c1[3]-c2[3])**2)
+		def self.colorDistance(c1,c2,chunky = false)
+			if !chunky
+				return Math.sqrt((c1[0]-c2[0])**2+(c1[1]-c2[1])**2+(c1[2]-c2[2])**2+(c1[3]-c2[3])**2)
+			else
+				return Math.sqrt((ChunkyPNG::Color.r(c1)-ChunkyPNG::Color.r(c2))**2+(ChunkyPNG::Color.g(c1)-ChunkyPNG::Color.g(c2))**2+(ChunkyPNG::Color.b(c1)-ChunkyPNG::Color.b(c2))**2+(ChunkyPNG::Color.a(c1)-ChunkyPNG::Color.a(c2))**2)
+			end
 		end
 		##
 		# Uses a combination of color averaging and color distance to find how "unique" a color is.
-		def self.colorUniqueness(c, ca)
-			return Pxlsrt::Colors.colorDistance(c, Pxlsrt::Colors.colorAverage(ca))
+		def self.colorUniqueness(c, ca, chunky = false)
+			return Pxlsrt::Colors.colorDistance(c, Pxlsrt::Colors.colorAverage(ca, chunky), chunky)
 		end
 		##
 		# Sorts an array of colors based on a method.
@@ -92,42 +104,42 @@ module Pxlsrt
 			mhm=[]
 			case how.downcase
 				when "sum-rgb"
-					mhm= list.sort_by { |c| c[0]+c[1]+c[2] }
+					mhm= list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c) }
 				when "sum-rgba"
-					mhm=list.sort_by { |c| c[0]+c[1]+c[2]+c[3] }
+					mhm=list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c)+ChunkyPNG::Color.a(c) }
 				when "red"
-					mhm= list.sort_by { |c| c[0] }
+					mhm= list.sort_by { |c| ChunkyPNG::Color.r(c) }
 				when "yellow"
-					mhm=list.sort_by { |c| c[0]+c[1] }
+					mhm=list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c) }
 				when "green"
-					mhm= list.sort_by { |c| c[1] }
+					mhm= list.sort_by { |c| ChunkyPNG::Color.g(c) }
 				when "cyan"
-					mhm=list.sort_by { |c| c[1]+c[2] }
+					mhm=list.sort_by { |c| ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c) }
 				when "blue"
-					mhm= list.sort_by { |c| c[2] }
+					mhm= list.sort_by { |c| ChunkyPNG::Color.b(c) }
 				when "magenta"
-					mhm=list.sort_by { |c| c[0]+c[2] }
+					mhm=list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.b(c) }
 				when "hue"
-					mhm= list.sort_by { |c| Pxlsrt::Colors.rgb2hsb(c)[0] }
+					mhm= list.sort_by { |c| d = Pxlsrt::Colors.getRGBA(c); Pxlsrt::Colors.rgb2hsb(d)[0] }
 				when "saturation"
-					mhm= list.sort_by { |c| Pxlsrt::Colors.rgb2hsb(c)[1] }
+					mhm= list.sort_by { |c| d = Pxlsrt::Colors.getRGBA(c); Pxlsrt::Colors.rgb2hsb(d)[1] }
 				when "brightness"
-					mhm= list.sort_by { |c| Pxlsrt::Colors.rgb2hsb(c)[2] }
+					mhm= list.sort_by { |c| d = Pxlsrt::Colors.getRGBA(c); Pxlsrt::Colors.rgb2hsb(d)[2] }
 				when "sum-hsb"
-					mhm= list.sort_by { |c| k=Pxlsrt::Colors.rgb2hsb(c); k[0]*100.0/360+k[1]+k[2] }
+					mhm= list.sort_by { |c| d = Pxlsrt::Colors.getRGBA(c); k=Pxlsrt::Colors.rgb2hsb(d); k[0]*100.0/360+k[1]+k[2] }
 				when "sum-hsba"
-					mhm= list.sort_by { |c| k=Pxlsrt::Colors.rgb2hsb(c); k[0]*100.0/360+k[1]+k[2]+c[3]*100.0/255 }
+					mhm= list.sort_by { |c| d = Pxlsrt::Colors.getRGBA(c); k=Pxlsrt::Colors.rgb2hsb(d); k[0]*100.0/360+k[1]+k[2]+d.a*100.0/255 }
 				when "uniqueness"
-					avg=Pxlsrt::Colors.colorAverage(list)
-					mhm=list.sort_by { |c| Pxlsrt::Colors.colorUniqueness(c, [avg]) }
+					avg=Pxlsrt::Colors.colorAverage(list, true)
+					mhm=list.sort_by { |c| Pxlsrt::Colors.colorUniqueness(c, [avg], true) }
 				when "luma"
-					mhm=list.sort_by { |c| c[0]*0.2126+c[1]*0.7152+c[2]*0.0722 }
+					mhm=list.sort_by { |c| ChunkyPNG::Color.r(c)*0.2126+ChunkyPNG::Color.g(c)*0.7152+ChunkyPNG::Color.b(c)*0.0722 }
 				when "random"
 					mhm=list.shuffle
 				when "alpha"
-					mhm=list.sort_by{ |c| c[3] }
+					mhm=list.sort_by{ |c| ChunkyPNG::Color.a(c) }
 				else
-					mhm= list.sort_by { |c| c[0]+c[1]+c[2] }
+					mhm= list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c) }
 			end
 			if reverse == 0
 				return mhm

@@ -39,13 +39,11 @@ class CLI < Thor
 
 	option :absolute, :type => :boolean, :default => false, :aliases => "-a", :banner => "ABSOLUTE EDGE FINDING"
 	option :threshold, :type => :numeric, :default => 20, :aliases => "-t"
-	option :edge, :type => :numeric, :default => 2, :aliases => "-e", :banner => "EDGE BUFFERING"
 	desc "smart INPUT OUTPUT [options]", "Smart pixel sorting"
 	##
 	# Specific options:
 	# * threshold - Number used in edge finding. Specifics explained under "absolute".
 	# * absolute - Make edge finding absolute over relative. For example, define a range as a collection of values under the threshold. Relative edge finding is when the contrast of the next pixel is larger than the threshold.
-	# * edge - Buffers edge.
 	def smart(input, output)
 		k={:trusted=>true}
 		for o in options.keys

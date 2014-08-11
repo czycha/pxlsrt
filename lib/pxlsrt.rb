@@ -1,6 +1,7 @@
 require "pxlsrt/version"
 require "pxlsrt/helpers"
 require "pxlsrt/lines"
+require "pxlsrt/image"
 require "pxlsrt/colors"
 require "pxlsrt/brute"
 require "pxlsrt/smart"

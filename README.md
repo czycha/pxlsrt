@@ -70,7 +70,7 @@ Same as above example.
 Smart sorting uses edges detected within the image (determined through [Sobel operators](http://en.wikipedia.org/wiki/Sobel_operator)) along with a user-defined threshold to define bandwidths to sort.
 
 ```
-pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--edge EDGE] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose] [--middle [integer]]
+pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose] [--middle [integer]]
 ```
 
 ### Options and parameters ###
@@ -79,7 +79,6 @@ Options that are shared with the brute method are covered there.
 
 * **`--threshold THRESHOLD`** or **`-t THRESHOLD`** *(optional integer)* - Used for edge finding. Defaults to `20`.
 * **`--absolute`** or **`-a`** *(optional boolean)* - A different method for edge finding. Defaults to `false`.
-* **`--edge EDGE`** or **`-e EDGE`** *(optional integer)* - "Softens" edges. Defaults to `2`.
 
 ## Sorting methods ##
 

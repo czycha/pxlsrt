@@ -28,7 +28,6 @@ module Pxlsrt
 				:verbose => false,
 				:absolute => false,
 				:threshold => 20,
-				:sorted => 2,
 				:trusted => false,
 				:middle => false
 			}
@@ -41,7 +40,6 @@ module Pxlsrt
 				:verbose => [false, true],
 				:absolute => [false, true],
 				:threshold => [{:class => [Float, Fixnum]}],
-				:sorted => [{:class => [Fixnum]}],
 				:trusted => [false, true],
 				:middle => :anything
 			}
@@ -66,166 +64,72 @@ module Pxlsrt
 					return
 				end
 				Pxlsrt::Helpers.verbose("Smart mode.") if options[:verbose]
-				case options[:reverse].downcase
-					when "reverse"
-						nre=1
-					when "either"
-						nre=-1
-					else
-						nre=0
+				png=Pxlsrt::Image.new(input)
+				if !options[:vertical] and !options[:diagonal]
+					Pxlsrt::Helpers.verbose("Retrieving rows") if options[:verbose]
+					lines = png.horizontalLines
+				elsif options[:vertical] and !options[:diagonal]
+					Pxlsrt::Helpers.verbose("Retrieving columns") if options[:verbose]
+					lines = png.verticalLines
+				elsif !options[:vertical] and options[:diagonal]
+					Pxlsrt::Helpers.verbose("Retrieving diagonals") if options[:verbose]
+					lines = png.diagonalLines
+				elsif options[:vertical] and options[:diagonal]
+					Pxlsrt::Helpers.verbose("Retrieving diagonals") if options[:verbose]
+					lines = png.rDiagonalLines
 				end
-				img=input
-				w,h=img.width,img.height
-				sobel_x = [[-1,0,1], [-2,0,2], [-1,0,1]]
-				sobel_y = [[-1,-2,-1], [ 0, 0, 0], [ 1, 2, 1]]
-				edge = ChunkyPNG::Image.new(w, h, ChunkyPNG::Color::TRANSPARENT)
-				valued="start"
-				k=[]
-				Pxlsrt::Helpers.verbose("Getting Sobel values and colors for pixels...") if options[:verbose]
-				grey=img.grayscale
-				for xy in 0..(w*h-1)
-					x=xy % w
-					y=(xy/w).floor
-					if x!=0 and x!=(w-1) and y!=0 and y!=(h-1)
-						t1=ChunkyPNG::Color.r(grey[x-1,y-1])
-						t2=ChunkyPNG::Color.r(grey[x,y-1])
-						t3=ChunkyPNG::Color.r(grey[x+1,y-1])
-						t4=ChunkyPNG::Color.r(grey[x-1,y])
-						t5=ChunkyPNG::Color.r(grey[x,y])
-						t6=ChunkyPNG::Color.r(grey[x+1,y])
-						t7=ChunkyPNG::Color.r(grey[x-1,y+1])
-						t8=ChunkyPNG::Color.r(grey[x,y+1])
-						t9=ChunkyPNG::Color.r(grey[x+1,y+1])
-						pixel_x=(sobel_x[0][0]*t1)+(sobel_x[0][1]*t2)+(sobel_x[0][2]*t3)+(sobel_x[1][0]*t4)+(sobel_x[1][1]*t5)+(sobel_x[1][2]*t6)+(sobel_x[2][0]*t7)+(sobel_x[2][1]*t8)+(sobel_x[2][2]*t9)
-						pixel_y=(sobel_y[0][0]*t1)+(sobel_y[0][1]*t2)+(sobel_y[0][2]*t3)+(sobel_y[1][0]*t4)+(sobel_y[1][1]*t5)+(sobel_y[1][2]*t6)+(sobel_y[2][0]*t7)+(sobel_y[2][1]*t8)+(sobel_y[2][2]*t9)
-						val = Math.sqrt(pixel_x * pixel_x + pixel_y * pixel_y).ceil
-					else
-						val = 2000000000
-					end
-					k.push({ "sobel" => val, "pixel" => [x, y], "color" => Pxlsrt::Colors.getRGBA(img[x, y]) })
-				end
-				if options[:vertical]==true
-					Pxlsrt::Helpers.verbose("Rotating image for vertical mode...") if options[:verbose]
-					k=Pxlsrt::Lines.rotateImage(k,w,h,3)
-					w,h=h,w
-				end
+				Pxlsrt::Helpers.verbose("Retrieving edges") if options[:verbose]
+				png.getSobels
 				if !options[:diagonal]
-					lines=Pxlsrt::Lines.imageRGBLines(k, w)
-					Pxlsrt::Helpers.verbose("Determining bands with a#{options[:absolute] ? "n absolute" : " relative"} threshold of #{options[:threshold]}...") if options[:verbose]
-					bands=Array.new()
-					for j in lines
-						slicing=true
-						pixel=0
-						m=Array.new()
-						while slicing do
-							n=Array.new
-							if m.length > 1
-								while m.last.length < options[:edge]
-									if m.length > 1
-										m[-2].concat(m[-1])
-										m.pop
-									else
-										break
-									end
-								end
-							end
-							bandWorking=true
-							while bandWorking do
-								n.push(j[pixel]["color"])
-								if (options[:absolute] ? (j[pixel+1]["sobel"]) : (j[pixel+1]["sobel"]-j[pixel]["sobel"])) > options[:threshold]
-									bandWorking=false
-								end
-								if (pixel+1)==(j.length-1)
-									n.push(j[pixel+1]["color"])
-									slicing=false
-									bandWorking=false
-								end
-								pixel+=1
-							end
-							m.push(n)
-						end
-						bands.concat(m)
-					end
-					Pxlsrt::Helpers.verbose("Pixel sorting using method '#{options[:method]}'...") if options[:verbose]
-					image=[]
-					if options[:smooth]
-						for band in bands
-							u=band.group_by {|x| x}
-							image.concat(Pxlsrt::Lines.handleMiddlate(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1), options[:middle]))
-						end
-					else
-						for band in bands
-							image.concat(Pxlsrt::Lines.handleMiddlate(Pxlsrt::Colors.pixelSort(band, options[:method], nre), options[:middle]))
-						end
-					end
+					iterator = 0...(lines.length)
 				else
-					Pxlsrt::Helpers.verbose("Determining diagonals...") if options[:verbose]
-					dia=Pxlsrt::Lines.getDiagonals(k,w,h)
-					Pxlsrt::Helpers.verbose("Determining bands with a#{options[:absolute] ? "n absolute" : " relative"} threshold of #{options[:threshold]}...") if options[:verbose]
-					for j in dia.keys
-						bands=[]
-						if dia[j].length>1
-							slicing=true
-							pixel=0
-							m=Array.new()
-							while slicing do
-								n=Array.new
-								if m.length > 1
-									while m.last.length < options[:edge]
-										if m.length > 1
-											m[-2].concat(m[-1])
-											m.pop
-										else
-											break
-										end
-									end
-								end
-								bandWorking=true
-								while bandWorking do
-									n.push(dia[j][pixel]["color"])
-									if (options[:absolute] ? (dia[j][pixel+1]["sobel"]) : (dia[j][pixel+1]["sobel"]-dia[j][pixel]["sobel"])) > options[:threshold]
-										bandWorking=false
-									end
-									if (pixel+1)==(dia[j].length-1)
-										n.push(dia[j][pixel+1]["color"])
-										slicing=false
-										bandWorking=false
-									end
-									pixel+=1
-								end
-								m.push(n)
+					iterator = lines.keys
+				end
+				Pxlsrt::Helpers.verbose("Dividing and pixel sorting lines") if options[:verbose]
+				for k in iterator
+					line = lines[k]
+					divisions = []
+					division = []
+					if line.length > 1
+						for pixel in 0...(line.length)
+							if !options[:vertical] and !options[:diagonal]
+								xy = png.horizontalXY(k, pixel)
+							elsif options[:vertical] and !options[:diagonal]
+								xy = png.verticalXY(k, pixel)
+							elsif !options[:vertical] and options[:diagonal]
+								xy = png.diagonalXY(k, pixel)
+							elsif options[:vertical] and options[:diagonal]
+								xy = png.rDiagonalXY(k, pixel)
 							end
-						else
-							m=[[dia[j].first["color"]]]
-						end
-						dia[j]=bands.concat(m)
-					end
-					Pxlsrt::Helpers.verbose("Pixel sorting using method '#{options[:method]}'...") if options[:verbose]
-					for j in dia.keys
-						ell=[]
-						if options[:smooth]
-							for band in dia[j]
-								u=band.group_by {|x| x}
-								ell.concat(Pxlsrt::Lines.handleMiddlate(Pxlsrt::Colors.pixelSort(u.keys, options[:method], nre).map { |x| u[x] }.flatten(1), options[:middle]))
+							pxlSobel = png.getSobelAndColor(xy["x"], xy["y"])
+							if division.length == 0 or (options[:absolute] ? pxlSobel["sobel"] : pxlSobel["sobel"] - division.last["sobel"]) <= options[:threshold]
+								division.push(pxlSobel)
+							else
+								divisions.push(division)
+								division = [pxlSobel]
 							end
-						else
-							for band in dia[j]
-								ell.concat(Pxlsrt::Lines.handleMiddlate(Pxlsrt::Colors.pixelSort(band, options[:method], nre), options[:middle]))
+							if pixel == line.length - 1
+								divisions.push(division)
+								division = []
 							end
 						end
-						dia[j]=ell
 					end
-					Pxlsrt::Helpers.verbose("Setting diagonals back to standard lines...") if options[:verbose]
-					image=Pxlsrt::Lines.fromDiagonals(dia,w)
-				end
-				if options[:vertical]==true
-					Pxlsrt::Helpers.verbose("Rotating back (because of vertical mode).") if options[:verbose]
-					image=Pxlsrt::Lines.rotateImage(image,w,h,1)
-					w,h=h,w
-				end
-				Pxlsrt::Helpers.verbose("Giving pixels new RGB values...") if options[:verbose]
-				for px in 0..(w*h-1)
-					edge[px % w, (px/w).floor]=Pxlsrt::Colors.arrayToRGBA(image[px])
+					newLine = []
+					for band in divisions
+						newLine.concat(
+							Pxlsrt::Helpers.handlePixelSort(
+								band.map { |sobelAndColor| sobelAndColor["color"] },
+								options
+							)
+						)
+					end
+					if !options[:diagonal]
+						png.replaceHorizontal(k, newLine) if !options[:vertical]
+						png.replaceVertical(k, newLine) if options[:vertical]
+					else
+						png.replaceDiagonal(k, newLine) if !options[:vertical]
+						png.replaceRDiagonal(k, newLine) if options[:vertical]
+					end
 				end
 				endTime=Time.now
 				timeElapsed=endTime-startTime
@@ -237,7 +141,7 @@ module Pxlsrt
 					Pxlsrt::Helpers.verbose("Took #{minutes} minute#{ minutes!=1 ? "s" : "" } and #{seconds} second#{ seconds!=1.0 ? "s" : "" }.") if options[:verbose]
 				end
 				Pxlsrt::Helpers.verbose("Returning ChunkyPNG::Image...") if options[:verbose]
-				return edge
+				return png.returnModified
 			else
 				Pxlsrt::Helpers.error("Options specified do not follow the correct format.") if options[:verbose]
 				return

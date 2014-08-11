@@ -87,8 +87,8 @@ module Pxlsrt
 		# Outputs random slices of an array.
 		# Because of the requirements of pxlsrt, it doesn't actually slice the array, but returns a range-like array. Example:
 		# [[0, 5], [6, 7], [8, 10]]
-		def self.randomSlices(arr, minLength, maxLength)
-			len=arr.length-1
+		def self.randomSlices(mainLength, minLength, maxLength)
+			len=mainLength-1
 			if len!=0
 				min=[minLength, maxLength].min
 				max=[maxLength, minLength].max

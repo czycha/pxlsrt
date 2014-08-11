@@ -1,5 +1,5 @@
 ##
 # The main module, your best friend.
 module Pxlsrt
-  VERSION = "1.5.1"
+  VERSION = "1.6"
 end

@@ -63,80 +63,42 @@ module Pxlsrt
 					return
 				end
 				Pxlsrt::Helpers.verbose("Brute mode.") if options[:verbose]
-				case options[:reverse].downcase
-					when "reverse"
-						nre=1
-					when "either"
-						nre=-1
-					else
-						nre=0
+				Pxlsrt::Helpers.verbose("Creating Pxlsrt::Image object") if options[:verbose]
+				png=Pxlsrt::Image.new(input)
+				if !options[:vertical] and !options[:diagonal]
+					Pxlsrt::Helpers.verbose("Retrieving rows") if options[:verbose]
+					lines = png.horizontalLines
+				elsif options[:vertical] and !options[:diagonal]
+					Pxlsrt::Helpers.verbose("Retrieving columns") if options[:verbose]
+					lines = png.verticalLines
+				elsif !options[:vertical] and options[:diagonal]
+					Pxlsrt::Helpers.verbose("Retrieving diagonals") if options[:verbose]
+					lines = png.diagonalLines
+				elsif options[:vertical] and options[:diagonal]
+					Pxlsrt::Helpers.verbose("Retrieving diagonals") if options[:verbose]
+					lines = png.rDiagonalLines
 				end
-				png=input
-				w=png.dimension.width
-				h=png.dimension.height
-				sorted=ChunkyPNG::Image.new(w, h, ChunkyPNG::Color::TRANSPARENT)
-				Pxlsrt::Helpers.verbose("Retrieving RGB values of pixels...") if options[:verbose]
-				kml=[]
-				for xy in 0..(w*h-1)
-					kml.push(Pxlsrt::Colors.getRGBA(png[xy % w,(xy/w).floor]))
-				end
-				if options[:vertical]==true
-					Pxlsrt::Helpers.verbose("Rotating image for vertical mode...") if options[:verbose]
-					kml=Pxlsrt::Lines.rotateImage(kml, w, h, 3)
-					w,h=h,w
-				end
-				toImage=[]
 				if !options[:diagonal]
-					Pxlsrt::Helpers.verbose("Pixel sorting using method '#{options[:method]}'...") if options[:verbose]
-					for m in Pxlsrt::Lines.imageRGBLines(kml, w)
-						sliceRanges=Pxlsrt::Lines.randomSlices(m, options[:min], options[:max])
-						newInTown=[]
-						if options[:smooth]!=true
-							for ranger in sliceRanges
-								newInTown.concat(Pxlsrt::Lines.handleMiddlate(Pxlsrt::Colors.pixelSort(m[ranger[0]..ranger[1]], options[:method].downcase, nre), options[:middle]))
-							end
-						else
-							for ranger in sliceRanges
-								k=(m[ranger[0]..ranger[1]]).group_by { |x| x }
-								g=Pxlsrt::Lines.handleMiddlate(Pxlsrt::Colors.pixelSort(k.keys, options[:method].downcase, nre), options[:middle])
-								j=g.map { |x| k[x] }.flatten(1)
-								newInTown.concat(j)
-							end
-						end
-						toImage.concat(newInTown)
-					end
+					iterator = 0...(lines.length)
 				else
-					Pxlsrt::Helpers.verbose("Determining diagonals...") if options[:verbose]
-					dia=Pxlsrt::Lines.getDiagonals(kml,w,h)
-					Pxlsrt::Helpers.verbose("Pixel sorting using method '#{options[:method]}'...") if options[:verbose]
-					for m in dia.keys
-						sliceRanges=Pxlsrt::Lines.randomSlices(dia[m], options[:min], options[:max])
-						newInTown=[]
-						if options[:smooth]!=true
-							for ranger in sliceRanges
-								newInTown.concat(Pxlsrt::Lines.handleMiddlate(Pxlsrt::Colors.pixelSort(dia[m][ranger[0]..ranger[1]], options[:method].downcase, nre), options[:middle]))
-							end
-						else
-							for ranger in sliceRanges
-								k=(dia[m][ranger[0]..ranger[1]]).group_by { |x| x }
-								g=Pxlsrt::Lines.handleMiddlate(Pxlsrt::Colors.pixelSort(k.keys, options[:method].downcase, nre), options[:middle])
-								j=g.map { |x| k[x] }.flatten(1)
-								newInTown.concat(j)
-							end
-						end
-						dia[m]=newInTown
+					iterator = lines.keys
+				end
+				Pxlsrt::Helpers.verbose("Dividing and pixel sorting lines") if options[:verbose]
+				for k in iterator
+					line = lines[k]
+					divisions = Pxlsrt::Lines.randomSlices(line.length,options[:min],options[:max])
+					newLine = []
+					for division in divisions
+						band = line[division[0]..division[1]]
+						newLine.concat(Pxlsrt::Helpers.handlePixelSort(band, options))
 					end
-					Pxlsrt::Helpers.verbose("Setting diagonals back to standard lines...") if options[:verbose]
-					toImage=Pxlsrt::Lines.fromDiagonals(dia,w)
-				end
-				if options[:vertical]==true
-					Pxlsrt::Helpers.verbose("Rotating back (because of vertical mode).") if options[:verbose]
-					toImage=Pxlsrt::Lines.rotateImage(toImage, w,h,1)
-					w,h=h,w
-				end
-				Pxlsrt::Helpers.verbose("Giving pixels new RGB values...") if options[:verbose]
-				for xy in 0..(w*h-1)
-					sorted[xy % w, (xy/w).floor]=Pxlsrt::Colors.arrayToRGBA(toImage[xy])
+					if !options[:diagonal]
+						png.replaceHorizontal(k, newLine) if !options[:vertical]
+						png.replaceVertical(k, newLine) if options[:vertical]
+					else
+						png.replaceDiagonal(k, newLine) if !options[:vertical]
+						png.replaceRDiagonal(k, newLine) if options[:vertical]
+					end
 				end
 				endTime=Time.now
 				timeElapsed=endTime-startTime
@@ -148,7 +110,7 @@ module Pxlsrt
 					Pxlsrt::Helpers.verbose("Took #{minutes} minute#{ minutes!=1 ? "s" : "" } and #{seconds} second#{ seconds!=1.0 ? "s" : "" }.") if options[:verbose]
 				end
 				Pxlsrt::Helpers.verbose("Returning ChunkyPNG::Image...") if options[:verbose]
-				return sorted
+				return png.returnModified
 			else
 				Pxlsrt::Helpers.error("Options specified do not follow the correct format.") if options[:verbose]
 				return

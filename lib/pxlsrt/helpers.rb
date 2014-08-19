@@ -59,9 +59,9 @@ module Pxlsrt
 		##
 		# Pixel sorting helper to eliminate repetition.
 		def self.handlePixelSort(band, o)
-			if o[:reverse].downcase == "reverse"
+			if (o[:reverse].class == String and (o[:reverse].downcase == "reverse" or o[:reverse] == "")) or o[:reverse] == true
 				reverse = 1
-			elsif o[:reverse].downcase == "either"
+			elsif o[:reverse].class == String and o[:reverse].downcase == "either"
 				reverse = -1
 			else
 				reverse = 0

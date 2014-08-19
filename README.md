@@ -22,7 +22,7 @@ gem install pxlsrt
 Brute sorting uses a user defined range for bandwidths to sort.
 
 ```
-pxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose] [--middle [integer]]
+pxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--smooth] [--reverse [either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose] [--middle [integer]]
 ```
 
 ### Options and parameters ###
@@ -33,7 +33,7 @@ pxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--smooth] [--rev
 * **`--max MAX`** *(optiona; integer)* - Maximum length of bandwidth, 1 to infinity. If the length is greater than the dimension of the image, the maximum length is the dimension. Defaults to `Infinity`.
 * **`--vertical`** or **`-v`** *(optional boolean)* - Sorts vertically instead of horizontally. Defaults to `false`.
 * **`--smooth`** or **`-s`** *(optional boolean)* - Places identical pixels adjacent to each other within the band. Here's why this may be needed. Within a band are the following colors: rgb(0, 255, 0), rgb(0, 0, 0), rgb(0, 255, 0). If you sort by the red value, they will all be in the same area because their red values are all 0. However, they will be arranged into the area as they are ordered in the list. If the band is smoothed, the two rgb(0, 255, 0) pixels will be next to each other. Smoothing does not affect values outside of the band. Defaults to `false`.
-* **`--reverse REVERSETYPE`** or **`-r REVERSETYPE`** *(optional string)* - Has three options for `REVERSETYPE`: `no`, `reverse`, and `either`. `no` does not reverse the bands. `reverse` does. `either` has a 50% chance of either reversing or keeping it in the same order. Defaults to `no`.
+* **`--reverse`** or **`-r`** *(optional string)* - Use just `--reverse` or `-r` to reverse the bands. Use `--reverse either` to randomly reverse bands. Do not use if you don't want to reverse.
 * **`--method METHOD`** or **`-m METHOD`** *(optional string)* - Sets the method used to sort the band. In a different section are descriptions of each method. Defaults to `sum-rgb`.
 * **`--diagonal`** or **`-d`** *(optional boolean)* - Sorts pixels diagonally. To reverse the direction of the diagonal, use with `--vertical`. Defaults to `false`.
 * **`--verbose`** or **`-V`** *(optional boolean)* - Prints to the terminal what the program is currently doing. Defaults to `false`.
@@ -52,7 +52,7 @@ Pixel sorts `input.png` horizontally by the sum of its red, green, and blue valu
 #### Full suite example ####
 
 ```
-pxlsrt brute input.png output.png --min 20 --max 30 --vertical --smooth --reverse reverse --method hue
+pxlsrt brute input.png output.png --min 20 --max 30 --vertical --smooth --reverse --method hue
 ```
 
 Pixel sorts `input.png` vertically by hue with bandwidths from 20 to 30, smoothes it, reverses direction, and outputs to `output.png`.
@@ -60,7 +60,7 @@ Pixel sorts `input.png` vertically by hue with bandwidths from 20 to 30, smoothe
 #### Full suite shortcut example ####
 
 ```
-pxlsrt brute input.png output.png -v -s -r reverse -m hue
+pxlsrt brute input.png output.png -v -s -r -m hue
 ```
 
 Same as above example.
@@ -70,7 +70,7 @@ Same as above example.
 Smart sorting uses edges detected within the image (determined through [Sobel operators](http://en.wikipedia.org/wiki/Sobel_operator)) along with a user-defined threshold to define bandwidths to sort.
 
 ```
-pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--vertical] [--smooth] [--reverse [no | reverse | either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose] [--middle [integer]]
+pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--vertical] [--smooth] [--reverse [either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose] [--middle [integer]]
 ```
 
 ### Options and parameters ###

@@ -19,7 +19,7 @@ module Pxlsrt
 		def self.brute(input, o={})
 			startTime=Time.now
 			defOptions={
-				:reverse => "no",
+				:reverse => false,
 				:vertical => false,
 				:diagonal => false,
 				:smooth => false,
@@ -31,7 +31,7 @@ module Pxlsrt
 				:middle => false
 			}
 			defRules={
-				:reverse => ["no", "reverse", "either"],
+				:reverse => :anything,
 				:vertical => [false, true],
 				:diagonal => [false, true],
 				:smooth => [false, true],

@@ -14,7 +14,7 @@ require 'thor'
 # * verbose - Have pxlsrt tell you what it's working on.
 # * help - More in depth commands.
 class CLI < Thor
-	class_option :reverse, :type => :string, :default => "no", :banner => "[no | reverse | either]", :aliases => "-r", :enum => ["no", "reverse", "either"]
+	class_option :reverse, :default => false, :aliases => "-r"
 	class_option :vertical, :type => :boolean, :default => false, :aliases => "-v"
 	class_option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
 	class_option :smooth, :type => :boolean, :default => false, :aliases => "-s"

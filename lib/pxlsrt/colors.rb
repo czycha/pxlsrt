@@ -52,18 +52,19 @@ module Pxlsrt
 			if ca.length==1
 				return ca.first
 			end
+			Pxlsrt::Helpers.verbose(ca) if ca.length == 0
 			if !chunky
 				r=((ca.collect { |c| c[0] }).inject{ |sum, el| sum+el }).to_f / ca.size
 				g=((ca.collect { |c| c[1] }).inject{ |sum, el| sum+el }).to_f / ca.size
 				b=((ca.collect { |c| c[2] }).inject{ |sum, el| sum+el }).to_f / ca.size
 				a=((ca.collect { |c| c[3] }).inject{ |sum, el| sum+el }).to_f / ca.size
-				return [r,g,b,a]
+				return [r.to_i, g.to_i, b.to_i, a.to_i]
 			else
 				r=((ca.collect { |c| ChunkyPNG::Color.r(c) }).inject{ |sum, el| sum+el }).to_f / ca.size
 				g=((ca.collect { |c| ChunkyPNG::Color.g(c) }).inject{ |sum, el| sum+el }).to_f / ca.size
 				b=((ca.collect { |c| ChunkyPNG::Color.b(c) }).inject{ |sum, el| sum+el }).to_f / ca.size
 				a=((ca.collect { |c| ChunkyPNG::Color.a(c) }).inject{ |sum, el| sum+el }).to_f / ca.size
-				return ChunkyPNG::Color.rgba(r,g,b,a)
+				return ChunkyPNG::Color.rgba(r.to_i, g.to_i, b.to_i, a.to_i)
 			end
 		end
 		##
@@ -102,6 +103,7 @@ module Pxlsrt
 		# * alpha
 		def self.pixelSort(list, how, reverse)
 			mhm=[]
+			Pxlsrt::Helpers.error(list) if list.length == 0
 			case how.downcase
 				when "sum-rgb"
 					mhm= list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c) }

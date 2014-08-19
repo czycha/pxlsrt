@@ -88,32 +88,32 @@ module Pxlsrt
 		# Because of the requirements of pxlsrt, it doesn't actually slice the array, but returns a range-like array. Example:
 		# [[0, 5], [6, 7], [8, 10]]
 		def self.randomSlices(mainLength, minLength, maxLength)
-			len=mainLength-1
-			if len!=0
-				min=[minLength, maxLength].min
-				max=[maxLength, minLength].max
-				if min > len
-					min=len
-				end
-				if max > len
-					max=len
-				end
-				nu=[[0, rand(min..max)]]
-				last=nu.first[1]
-				sorting=true
-				while sorting do
-					if (len-last) <= max
-						nu.push([last+1, len])
-						sorting=false
-					else
-						nu.push([last+1, last+1+rand(min..max)])
-						last=nu.last[1]
-					end
-				end
+			if mainLength <= 1
+				return [[0, 0]]
 			else
-				nu=[[0,0]]
+				min = [minLength, maxLength].min
+				max = [minLength, maxLength].max
+				min = mainLength if min > mainLength
+				max = mainLength if max > mainLength
+				min = 1 if min < 1
+				max = 1 if max < 1
+				nu = [[0, rand(min..max) - 1]]
+				last = nu.last.last
+				sorting = true
+				i = 0
+				while sorting do
+					if (mainLength - last) <= max
+						if last + 1 <= mainLength - 1
+							nu.push([last + 1, mainLength - 1])
+						end
+						sorting = false
+					else
+						nu.push([last+1, last + rand(min..max)])
+					end
+					last = nu.last.last
+				end
+				return nu
 			end
-			return nu
 		end
 		##
 		# Uses math to turn an array into an array of diagonals.

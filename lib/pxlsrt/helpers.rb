@@ -5,7 +5,7 @@ module Pxlsrt
 		##
 		# Determines if a value has content.
 		def self.contented(c)
-			return (c.class!=NilClass and ((defined? c)!="nil") and ((/(\S)/.match("#{c}"))!=nil))
+			return c != nil
 		end
 		##
 		# Used to output a red string to the terminal.

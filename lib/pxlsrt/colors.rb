@@ -12,7 +12,7 @@ module Pxlsrt
 		##
 		# Check if file is a PNG image. ChunkyPNG only works with PNG images. Eventually, I might use conversion tools to add support, but not right now.
 		def self.isPNG?(path)
-			return File.read(path).bytes==[137, 80, 78, 71, 10]
+			return File.open(path, 'rb').read(9).include?('PNG')
 		end
 		##
 		# Converts an RGB-like array ([red, green, blue]) into an HSB-like array ([hue, saturation, brightness]).

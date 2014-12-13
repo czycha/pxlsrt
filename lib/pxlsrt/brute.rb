@@ -52,14 +52,17 @@ module Pxlsrt
 							input=ChunkyPNG::Image.from_file(input)
 						else
 							Pxlsrt::Helpers.error("File #{input} is not a valid PNG.") if options[:verbose]
+							raise "Invalid PNG"
 							return
 						end
 					else
 						Pxlsrt::Helpers.error("File #{input} doesn't exist!") if options[:verbose]
+						raise "File doesn't exit"
 						return
 					end
 				elsif input.class!=String and input.class!=ChunkyPNG::Image
 					Pxlsrt::Helpers.error("Input is not a filename or ChunkyPNG::Image") if options[:verbose]
+					raise "Invalid input (must be filename or ChunkyPNG::Image)"
 					return
 				end
 				Pxlsrt::Helpers.verbose("Brute mode.") if options[:verbose]
@@ -113,6 +116,7 @@ module Pxlsrt
 				return png.returnModified
 			else
 				Pxlsrt::Helpers.error("Options specified do not follow the correct format.") if options[:verbose]
+				raise "Bad options"
 				return
 			end
 		end

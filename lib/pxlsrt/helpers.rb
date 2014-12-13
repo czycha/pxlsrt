@@ -18,6 +18,16 @@ module Pxlsrt
 			return "\e[36m#{what}\e[0m"
 		end
 		##
+		# Used to output a yellow string to the terminal.
+		def self.yellow(what)
+			return "\e[33m#{what}\e[0m"
+		end
+		##
+		# Used to output a green string to the terminal.
+		def self.green(what)
+			return "\e[32m#{what}\e[0m"
+		end
+		##
 		# Determines if a string can be a float or integer.
 		def self.isNumeric?(s)
 			true if Float(s) rescue false
@@ -89,6 +99,17 @@ module Pxlsrt
 		# Prints something.
 		def self.verbose(what)
 			puts "#{Pxlsrt::Helpers.cyan("pxlsrt")} #{what}"
+		end
+		##
+		# Progress indication.
+		def self.progress(what, amount, outof)
+			progress = (amount.to_f * 100.0 / outof.to_f).to_i
+			if progress == 100
+				puts "\r#{Pxlsrt::Helpers.green("pxlsrt")} #{what} (#{Pxlsrt::Helpers.green("#{progress}%")})"
+			else
+				$stdout.write "\r#{Pxlsrt::Helpers.yellow("pxlsrt")} #{what} (#{Pxlsrt::Helpers.yellow("#{progress}%")})"
+				$stdout.flush
+			end
 		end
 	end
 end

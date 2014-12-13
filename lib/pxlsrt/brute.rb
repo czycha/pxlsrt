@@ -86,7 +86,9 @@ module Pxlsrt
 				else
 					iterator = lines.keys
 				end
-				Pxlsrt::Helpers.verbose("Dividing and pixel sorting lines") if options[:verbose]
+				prr = 0
+				len = iterator.to_a.length
+				Pxlsrt::Helpers.progress("Dividing and pixel sorting lines", prr, len) if options[:verbose]
 				for k in iterator
 					line = lines[k]
 					divisions = Pxlsrt::Lines.randomSlices(line.length,options[:min],options[:max])
@@ -102,6 +104,8 @@ module Pxlsrt
 						png.replaceDiagonal(k, newLine) if !options[:vertical]
 						png.replaceRDiagonal(k, newLine) if options[:vertical]
 					end
+					prr += 1
+					Pxlsrt::Helpers.progress("Dividing and pixel sorting lines", prr, len) if options[:verbose]
 				end
 				endTime=Time.now
 				timeElapsed=endTime-startTime

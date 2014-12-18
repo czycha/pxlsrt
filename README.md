@@ -80,7 +80,19 @@ Options that are shared with the brute method are covered there.
 * **`--threshold THRESHOLD`** or **`-t THRESHOLD`** *(optional integer)* - Used for edge finding. Defaults to `20`.
 * **`--absolute`** or **`-a`** *(optional boolean)* - A different method for edge finding. Defaults to `false`.
 
-## Sorting methods ##
+## Kim sort ##
+
+This uses [Kim Asendorf](http://kimasendorf.com/)'s [pixel sorting](http://kimasendorf.com/mountain-tour/) [algorithm](https://github.com/kimasendorf/ASDFPixelSort).
+
+```
+pxlsrt kim INPUT OUTPUT [--method METHOD] [--value VALUE] [--verbose]
+```
+
+* **`--method METHOD`** or **`-m METHOD`** *(optional string)* - The method to use for sorting. Kim Asendorf's algorithm only uses three methods: `black`, `brightness`, and `white`. Defaults to `brightness`.
+* **`--value VALUE`** or **`-v VALUE`** *(optional integer)* - Used in the algorithm to find the next pixel to break at. Default depends on chosen method.
+* **`--verbose`** or **`-V`**
+
+## Brute and Smart sorting methods ##
 
 ### sum-rgb ###
 
@@ -221,14 +233,16 @@ sum-hsba(hue, saturation, brightness, alpha) = (hue * 100 / 360) + saturation + 
 require 'pxlsrt'
 ```
 
-### Pxlsrt::Smart and Pxlsrt::Brute
+### Pxlsrt::Smart, Pxlsrt::Brute, Pxlsrt::Kim
 
-#### Pxlsrt::Brute.brute or Pxlsrt::Smart.smart
+#### Pxlsrt::Brute.brute, Pxlsrt::Smart.smart, or Pxlsrt::Kim.kim
 
 ```ruby
 Pxlsrt::Brute.brute(input, options)
 
 Pxlsrt::Smart.smart(input, options)
+
+Pxlsrt::Kim.kim(input, options)
 ```
 
 * **`input`** *(required string or ChunkyPNG::Image)* - Either a ChunkyPNG image or a string of a path leading to an image.
@@ -244,6 +258,10 @@ sorted_img.save("path/to/output")
 img=ChunkyPNG::Image.from_file("path/to/image")
 sorted_img=Pxlsrt::Smart.smart(img, :verbose=>true, :min=>20, :diagonal=>true)
 sorted_img.save("path/to/output")
+
+img=ChunkyPNG::Image.from_file("path/to/image")
+sorted_img=Pxlsrt::Kim.kim(img, :verbose=>true, :method=>"black")
+sorted_img.save("path/to/output")
 ```
 
 Alternatively:
@@ -252,14 +270,18 @@ Alternatively:
 Pxlsrt::Brute.brute("path/to/image", :verbose=>true, :min=>20, :diagonal=>true).save("path/to/output")
 
 Pxlsrt::Smart.smart("path/to/image", :verbose=>true, :min=>20, :diagonal=>true).save("path/to/output")
+
+Pxlsrt::Kim.kim("path/to/image", :verbose=>true, :method=>"black").save("path/to/output")
 ```
 
-#### Pxlsrt::Brute.suite or Pxlsrt::Smart.suite
+#### Pxlsrt::Brute.suite, Pxlsrt::Smart.suite, or Pxlsrt::Kim.suite
 
 ```ruby
 Pxlsrt::Brute.suite(inputFileName, outputFileName, options)
 
 Pxlsrt::Smart.suite(inputFileName, outputFileName, options)
+
+Pxlsrt::Kim.suite(inputFileName, outputFileName, options)
 ```
 
 * **`inputFileName`** *(required string)* - Path to input image.
@@ -272,5 +294,6 @@ Example:
 Pxlsrt::Brute.suite("path/to/image", "path/to/output", :verbose=>true, :min=>20, :diagonal=>true)
 
 Pxlsrt::Smart.suite("path/to/image", "path/to/output", :verbose=>true, :min=>20, :diagonal=>true)
-```
 
+Pxlsrt::Smart.suite("path/to/image", "path/to/output", :verbose=>true, :method=>"black")
+```

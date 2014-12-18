@@ -158,6 +158,16 @@ module Pxlsrt
 		def []=(x, y, color)
 			@modified[x, y] = color
 		end
+		def i(i)
+			x = i % @width
+			y = (i / @width).floor
+			return self[x, y]
+		end
+		def i=(i, color)
+			x = i % @width
+			y = (i / @width).floor
+			self[x, y] = color
+		end
 		##
 		# Return the original, unmodified image.
 		def returnOriginal
@@ -167,6 +177,12 @@ module Pxlsrt
 		# Return the modified image.
 		def returnModified
 			return @modified
+		end
+		def getWidth
+			return @width
+		end
+		def getHeight
+			return @height
 		end
 	end
 end

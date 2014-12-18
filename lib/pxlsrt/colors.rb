@@ -5,6 +5,9 @@ module Pxlsrt
 	# Includes color operations.
 	class Colors
 		##
+		# List of sorting methods.
+		METHODS = ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness", "luma", "random", "cyan", "magenta", "yellow", "alpha", "sum-rgba", "sum-hsba"]
+		##
 		# Converts a ChunkyPNG pixel into an array of the red, green, blue, and alpha values
 		def self.getRGBA(pxl)
 			return [ChunkyPNG::Color.r(pxl), ChunkyPNG::Color.g(pxl), ChunkyPNG::Color.b(pxl), ChunkyPNG::Color.a(pxl)]
@@ -13,38 +16,6 @@ module Pxlsrt
 		# Check if file is a PNG image. ChunkyPNG only works with PNG images. Eventually, I might use conversion tools to add support, but not right now.
 		def self.isPNG?(path)
 			return File.open(path, 'rb').read(9).include?('PNG')
-		end
-		##
-		# Converts an RGB-like array ([red, green, blue]) into an HSB-like array ([hue, saturation, brightness]).
-		def self.rgb2hsb(rgb)
-			r = rgb[0] / 255.0
-			g = rgb[1] / 255.0
-			b = rgb[2] / 255.0
-			max = [r, g, b].max
-			min = [r, g, b].min
-			delta = max - min
-			v = max * 100
-			if (max != 0.0)
-				s = delta / max *100
-			else
-				s = 0.0
-			end
-			if (s == 0.0) 
-				h = 0.0
-			else
-				if (r == max)
-					h = (g - b) / delta
-				elsif (g == max)
-					h = 2 + (b - r) / delta
-				elsif (b == max)
-					h = 4 + (r - g) / delta
-				end
-				h *= 60.0
-				if (h < 0)
-					h += 360.0
-				end
-			end
-			return [h,s,v]
 		end
 		##
 		# Averages an array of RGB-like arrays.
@@ -106,49 +77,49 @@ module Pxlsrt
 			Pxlsrt::Helpers.error(list) if list.length == 0
 			case how.downcase
 				when "sum-rgb"
-					mhm= list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c) }
+					mhm = list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c) }
 				when "sum-rgba"
-					mhm=list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c)+ChunkyPNG::Color.a(c) }
+					mhm =list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c)+ChunkyPNG::Color.a(c) }
 				when "red"
-					mhm= list.sort_by { |c| ChunkyPNG::Color.r(c) }
+					mhm = list.sort_by { |c| ChunkyPNG::Color.r(c) }
 				when "yellow"
-					mhm=list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c) }
+					mhm =list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c) }
 				when "green"
-					mhm= list.sort_by { |c| ChunkyPNG::Color.g(c) }
+					mhm = list.sort_by { |c| ChunkyPNG::Color.g(c) }
 				when "cyan"
-					mhm=list.sort_by { |c| ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c) }
+					mhm =list.sort_by { |c| ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c) }
 				when "blue"
-					mhm= list.sort_by { |c| ChunkyPNG::Color.b(c) }
+					mhm = list.sort_by { |c| ChunkyPNG::Color.b(c) }
 				when "magenta"
-					mhm=list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.b(c) }
+					mhm =list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.b(c) }
 				when "hue"
-					mhm= list.sort_by { |c| d = Pxlsrt::Colors.getRGBA(c); Pxlsrt::Colors.rgb2hsb(d)[0] }
+					mhm = list.sort_by { |c| ChunkyPNG::Color.to_hsb(c)[0] % 360 }
 				when "saturation"
-					mhm= list.sort_by { |c| d = Pxlsrt::Colors.getRGBA(c); Pxlsrt::Colors.rgb2hsb(d)[1] }
+					mhm = list.sort_by { |c| ChunkyPNG::Color.to_hsb(c)[1] }
 				when "brightness"
-					mhm= list.sort_by { |c| d = Pxlsrt::Colors.getRGBA(c); Pxlsrt::Colors.rgb2hsb(d)[2] }
+					mhm = list.sort_by { |c| ChunkyPNG::Color.to_hsb(c)[2] }
 				when "sum-hsb"
-					mhm= list.sort_by { |c| d = Pxlsrt::Colors.getRGBA(c); k=Pxlsrt::Colors.rgb2hsb(d); k[0]*100.0/360+k[1]+k[2] }
+					mhm = list.sort_by { |c| k = ChunkyPNG::Color.to_hsb(c); (k[0] % 360) / 360.0 + k[1] + k[2] }
 				when "sum-hsba"
-					mhm= list.sort_by { |c| d = Pxlsrt::Colors.getRGBA(c); k=Pxlsrt::Colors.rgb2hsb(d); k[0]*100.0/360+k[1]+k[2]+d.a*100.0/255 }
+					mhm = list.sort_by { |c| k = ChunkyPNG::Color.to_hsb(c); (k[0] % 360) / 360.0 + k[1] + k[2] + ChunkyPNG::Color.a(c) / 255.0 }
 				when "uniqueness"
-					avg=Pxlsrt::Colors.colorAverage(list, true)
-					mhm=list.sort_by { |c| Pxlsrt::Colors.colorUniqueness(c, [avg], true) }
+					avg = Pxlsrt::Colors.colorAverage(list, true)
+					mhm = list.sort_by { |c| Pxlsrt::Colors.colorUniqueness(c, [avg], true) }
 				when "luma"
-					mhm=list.sort_by { |c| ChunkyPNG::Color.r(c)*0.2126+ChunkyPNG::Color.g(c)*0.7152+ChunkyPNG::Color.b(c)*0.0722 }
+					mhm = list.sort_by { |c| ChunkyPNG::Color.r(c) * 0.2126 + ChunkyPNG::Color.g(c) * 0.7152 + ChunkyPNG::Color.b(c) * 0.0722 + ChunkyPNG::Color.a(c) }
 				when "random"
-					mhm=list.shuffle
+					mhm = list.shuffle
 				when "alpha"
-					mhm=list.sort_by{ |c| ChunkyPNG::Color.a(c) }
+					mhm = list.sort_by{ |c| ChunkyPNG::Color.a(c) }
 				else
-					mhm= list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c) }
+					mhm = list.sort_by { |c| ChunkyPNG::Color.r(c)+ChunkyPNG::Color.g(c)+ChunkyPNG::Color.b(c) }
 			end
 			if reverse == 0
 				return mhm
 			elsif reverse == 1
 				return mhm.reverse
 			else
-				return rand(0..1)==0 ? mhm : mhm.reverse
+				return [true, false].sample ? mhm : mhm.reverse
 			end
 		end
 		##

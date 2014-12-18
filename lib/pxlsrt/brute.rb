@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'oily_png'
 
 module Pxlsrt
@@ -15,7 +14,7 @@ module Pxlsrt
 			end
 		end
 		##
-		# The main attraction of the Brute class. Returns a ChunkyPNG::Image that is sorted according to the options provided. Will return nil if it encounters an errors.
+		# The main attraction of the Brute class. Returns a ChunkyPNG::Image that is sorted according to the options provided. Will raise any error that occurs.
 		def self.brute(input, o={})
 			startTime=Time.now
 			defOptions={
@@ -35,7 +34,7 @@ module Pxlsrt
 				:vertical => [false, true],
 				:diagonal => [false, true],
 				:smooth => [false, true],
-				:method => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness", "luma", "random", "cyan", "magenta", "yellow", "alpha", "sum-rgba", "sum-hsba"],
+				:method => Pxlsrt::Colors::METHODS,
 				:verbose => [false, true],
 				:min => [Float::INFINITY, {:class => [Fixnum]}],
 				:max => [Float::INFINITY, {:class => [Fixnum]}],
@@ -53,17 +52,14 @@ module Pxlsrt
 						else
 							Pxlsrt::Helpers.error("File #{input} is not a valid PNG.") if options[:verbose]
 							raise "Invalid PNG"
-							return
 						end
 					else
 						Pxlsrt::Helpers.error("File #{input} doesn't exist!") if options[:verbose]
 						raise "File doesn't exit"
-						return
 					end
 				elsif input.class!=String and input.class!=ChunkyPNG::Image
 					Pxlsrt::Helpers.error("Input is not a filename or ChunkyPNG::Image") if options[:verbose]
 					raise "Invalid input (must be filename or ChunkyPNG::Image)"
-					return
 				end
 				Pxlsrt::Helpers.verbose("Brute mode.") if options[:verbose]
 				Pxlsrt::Helpers.verbose("Creating Pxlsrt::Image object") if options[:verbose]
@@ -121,7 +117,6 @@ module Pxlsrt
 			else
 				Pxlsrt::Helpers.error("Options specified do not follow the correct format.") if options[:verbose]
 				raise "Bad options"
-				return
 			end
 		end
 	end

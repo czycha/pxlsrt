@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
 require 'pxlsrt'
 require 'thor'
 
@@ -14,14 +13,14 @@ require 'thor'
 # * verbose - Have pxlsrt tell you what it's working on.
 # * help - More in depth commands.
 class CLI < Thor
-	class_option :reverse, :default => false, :aliases => "-r"
-	class_option :vertical, :type => :boolean, :default => false, :aliases => "-v"
-	class_option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
-	class_option :smooth, :type => :boolean, :default => false, :aliases => "-s"
-	class_option :method, :type => :string, :default => "sum-rgb", :banner => "[sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | cyan | magenta | yellow | alpha | sum-rgba | sum-hsba]", :aliases => "-m", :enum => ["sum-rgb", "red", "green", "blue", "sum-hsb", "hue", "saturation", "brightness", "uniqueness", "luma", "random", "cyan", "magenta", "yellow", "alpha", "sum-rgba", "sum-hsba"]
 	class_option :verbose, :type => :boolean, :default => false, :aliases => "-V"
-	class_option :middle, :default => false, :aliases => "-M"
 
+	option :reverse, :default => false, :aliases => "-r"
+	option :vertical, :type => :boolean, :default => false, :aliases => "-v"
+	option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
+	option :smooth, :type => :boolean, :default => false, :aliases => "-s"
+	option :method, :type => :string, :default => "sum-rgb", :banner => "[#{Pxlsrt::Colors::METHODS.join(" | ")}]", :aliases => "-m", :enum => Pxlsrt::Colors::METHODS
+	option :middle, :default => false, :aliases => "-M"
 	option :min, :type => :numeric, :default => Float::INFINITY, :banner => "MINIMUM BANDWIDTH"
 	option :max, :type => :numeric, :default => Float::INFINITY, :banner => "MAXIMUM BANDWIDTH"
 	desc "brute INPUT OUTPUT [options]", "Brute pixel sorting"
@@ -37,6 +36,12 @@ class CLI < Thor
 		Pxlsrt::Brute.suite(input, output, k)
 	end
 
+	option :reverse, :default => false, :aliases => "-r"
+	option :vertical, :type => :boolean, :default => false, :aliases => "-v"
+	option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
+	option :smooth, :type => :boolean, :default => false, :aliases => "-s"
+	option :method, :type => :string, :default => "sum-rgb", :banner => "[#{Pxlsrt::Colors::METHODS.join(" | ")}]", :aliases => "-m", :enum => Pxlsrt::Colors::METHODS
+	option :middle, :default => false, :aliases => "-M"
 	option :absolute, :type => :boolean, :default => false, :aliases => "-a", :banner => "ABSOLUTE EDGE FINDING"
 	option :threshold, :type => :numeric, :default => 20, :aliases => "-t"
 	desc "smart INPUT OUTPUT [options]", "Smart pixel sorting"
@@ -50,6 +55,17 @@ class CLI < Thor
 			k[o.to_sym]=options[o]
 		end
 		Pxlsrt::Smart.suite(input, output, k)
+	end
+
+	option :method, :type => :string, :default => "brightness", :aliases => "-m", :enum => ["brightness", "white", "black"]
+	option :value, :type => :numeric, :aliases => "-v"
+	desc "kim INPUT OUTPUT [outputs]", "Uses Kim Asendorf's algorithm"
+	def kim(input, output)
+		k= {:trusted => true}
+		for o in options.keys
+			k[o.to_sym] = options[o]
+		end
+		Pxlsrt::Kim.suite(input, output, k)
 	end
 end
 

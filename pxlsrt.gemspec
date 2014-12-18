@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/EVA-01/pxlsrt"
   spec.license       = "MIT"
 
-  spec.files         = ["lib/pxlsrt.rb", "lib/pxlsrt/colors.rb", "lib/pxlsrt/helpers.rb", "lib/pxlsrt/brute.rb", "lib/pxlsrt/smart.rb", "lib/pxlsrt/version.rb", "lib/pxlsrt/lines.rb", "lib/pxlsrt/image.rb"]
+  spec.files         = ["lib/pxlsrt.rb", "lib/pxlsrt/colors.rb", "lib/pxlsrt/helpers.rb", "lib/pxlsrt/brute.rb", "lib/pxlsrt/smart.rb", "lib/pxlsrt/version.rb", "lib/pxlsrt/lines.rb", "lib/pxlsrt/image.rb", "lib/pxlsrt/kim.rb"]
   spec.executables   = ["pxlsrt"]
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]

@@ -4,9 +4,8 @@ module Pxlsrt
 	class Image
 		def initialize(png)
 			@original = png
-			@width = png.width
-			@height = png.height
-			@modified = png
+			@modified = ChunkyPNG::Image.from_canvas(png)
+			@width, @height = png.width, png.height
 		end
 		##
 		# Retrieve a multidimensional array consisting of the horizontal lines (row) of the image.

@@ -92,7 +92,21 @@ pxlsrt kim INPUT OUTPUT [--method METHOD] [--value VALUE] [--verbose]
 * **`--value VALUE`** or **`-v VALUE`** *(optional integer)* - Used in the algorithm to find the next pixel to break at. Default depends on chosen method.
 * **`--verbose`** or **`-V`**
 
-## Brute and Smart sorting methods ##
+## Seed sort ##
+
+Inspired by [Jeff Thompson](https://github.com/jeffThompson)'s [seed sorter](https://github.com/jeffThompson/PixelSorting/tree/master/SeedSorting), but only employs portions of their algorithm.
+
+```
+pxlsrt seed INPUT OUTPUT [--threshold THRESHOLD] [--smooth] [--reverse [either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--verbose] [--middle [integer]] [--random SEEDCOUNT] [--distance DISTANCE]
+```
+
+* **`--random SEEDCOUNT`** or **`-R SEEDCOUNT`** *(optional)* - Opt to use random seed placement instead of placing seeds based on edge finding. The `SEEDCOUNT` should either be `false`, for the edge finding method, or an integer corresponding to how many seeds to place. Defaults to `false`, (edge finding method).
+* **`--threshold THRESHOLD`** or **`-t THRESHOLD`** *(optional number)* - *Used only with edge finding method.* The threshold to determine edges to use as seeds. The smaller the number, the less seeds. Defaults to `0.1`.
+* **`--distance DISTANCE`** or **`-d DISTANCE`** *(optional)* - *Used only with edge finding method.* The minimum number of pixels away that seeds have to be away from each other. Will weed out infringing seeds. Inputting `false` is equivalent to not removing any seeds that are close to each other. Defaults to `100`.
+* The rest are the same as what is used in Brute and Smart.
+
+
+## Brute, Smart, and Seed sorting methods ##
 
 ### sum-rgb ###
 
@@ -233,9 +247,9 @@ sum-hsba(hue, saturation, brightness, alpha) = (hue * 100 / 360) + saturation + 
 require 'pxlsrt'
 ```
 
-### Pxlsrt::Smart, Pxlsrt::Brute, Pxlsrt::Kim
+### Pxlsrt::Smart, Pxlsrt::Brute, Pxlsrt::Kim, Pxlsrt::Seed
 
-#### Pxlsrt::Brute.brute, Pxlsrt::Smart.smart, or Pxlsrt::Kim.kim
+#### Pxlsrt::Brute.brute, Pxlsrt::Smart.smart, Pxlsrt::Kim.kim, or Pxlsrt::Seed.seed
 
 ```ruby
 Pxlsrt::Brute.brute(input, options)
@@ -243,6 +257,8 @@ Pxlsrt::Brute.brute(input, options)
 Pxlsrt::Smart.smart(input, options)
 
 Pxlsrt::Kim.kim(input, options)
+
+Pxlsrt::Seed.seed(input, options)
 ```
 
 * **`input`** *(required string or ChunkyPNG::Image)* - Either a ChunkyPNG image or a string of a path leading to an image.
@@ -256,11 +272,15 @@ sorted_img=Pxlsrt::Brute.brute(img, :verbose=>true, :min=>20, :diagonal=>true)
 sorted_img.save("path/to/output")
 
 img=ChunkyPNG::Image.from_file("path/to/image")
-sorted_img=Pxlsrt::Smart.smart(img, :verbose=>true, :min=>20, :diagonal=>true)
+sorted_img=Pxlsrt::Smart.smart(img, :verbose=>true, :diagonal=>true)
 sorted_img.save("path/to/output")
 
 img=ChunkyPNG::Image.from_file("path/to/image")
 sorted_img=Pxlsrt::Kim.kim(img, :verbose=>true, :method=>"black")
+sorted_img.save("path/to/output")
+
+img=ChunkyPNG::Image.from_file("path/to/image")
+sorted_img=Pxlsrt::Seed.seed(img, :verbose=>true, :middlate => 10)
 sorted_img.save("path/to/output")
 ```
 
@@ -269,12 +289,14 @@ Alternatively:
 ```ruby
 Pxlsrt::Brute.brute("path/to/image", :verbose=>true, :min=>20, :diagonal=>true).save("path/to/output")
 
-Pxlsrt::Smart.smart("path/to/image", :verbose=>true, :min=>20, :diagonal=>true).save("path/to/output")
+Pxlsrt::Smart.smart("path/to/image", :verbose=>true, :diagonal=>true).save("path/to/output")
 
 Pxlsrt::Kim.kim("path/to/image", :verbose=>true, :method=>"black").save("path/to/output")
+
+Pxlsrt::Seed.seed(img, :verbose=>true, :middlate => 10).save("path/to/output")
 ```
 
-#### Pxlsrt::Brute.suite, Pxlsrt::Smart.suite, or Pxlsrt::Kim.suite
+#### Pxlsrt::Brute.suite, Pxlsrt::Smart.suite, Pxlsrt::Kim.suite, or Pxlsrt::Seed.suite
 
 ```ruby
 Pxlsrt::Brute.suite(inputFileName, outputFileName, options)
@@ -282,6 +304,8 @@ Pxlsrt::Brute.suite(inputFileName, outputFileName, options)
 Pxlsrt::Smart.suite(inputFileName, outputFileName, options)
 
 Pxlsrt::Kim.suite(inputFileName, outputFileName, options)
+
+Pxlsrt::Seed.suite(inputFileName, outputFileName, options)
 ```
 
 * **`inputFileName`** *(required string)* - Path to input image.
@@ -293,7 +317,9 @@ Example:
 ```ruby
 Pxlsrt::Brute.suite("path/to/image", "path/to/output", :verbose=>true, :min=>20, :diagonal=>true)
 
-Pxlsrt::Smart.suite("path/to/image", "path/to/output", :verbose=>true, :min=>20, :diagonal=>true)
+Pxlsrt::Smart.suite("path/to/image", "path/to/output", :verbose=>true, :diagonal=>true)
 
-Pxlsrt::Smart.suite("path/to/image", "path/to/output", :verbose=>true, :method=>"black")
+Pxlsrt::Kim.suite("path/to/image", "path/to/output", :verbose=>true, :method=>"black")
+
+Pxlsrt::Seed.suite("path/to/image", "path/to/output", :verbose=>true, :middlate => 10)
 ```

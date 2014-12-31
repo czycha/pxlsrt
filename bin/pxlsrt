@@ -59,13 +59,39 @@ class CLI < Thor
 
 	option :method, :type => :string, :default => "brightness", :aliases => "-m", :enum => ["brightness", "white", "black"]
 	option :value, :type => :numeric, :aliases => "-v"
-	desc "kim INPUT OUTPUT [outputs]", "Uses Kim Asendorf's algorithm"
+	desc "kim INPUT OUTPUT [options]", "Uses Kim Asendorf's algorithm"
 	def kim(input, output)
 		k= {:trusted => true}
 		for o in options.keys
 			k[o.to_sym] = options[o]
 		end
 		Pxlsrt::Kim.suite(input, output, k)
+	end
+
+	option :reverse, :default => false, :aliases => "-r"
+	option :smooth, :type => :boolean, :default => false, :aliases => "-s"
+	option :method, :type => :string, :default => "sum-rgb", :banner => "[#{Pxlsrt::Colors::METHODS.join(" | ")}]", :aliases => "-m", :enum => Pxlsrt::Colors::METHODS
+	option :middle, :default => false, :aliases => "-M"
+	option :random, :default => false, :aliases => "-R"
+	option :distance, :default => 100, :aliases => "-d"
+	option :threshold, :default => 0.1, :aliases => "-t", :type => :numeric
+	desc "seed INPUT OUTPUT [options]", "Seed pixel sorting"
+	def seed(input, output)
+		k={:trusted=>true}
+		for o in options.keys
+			k[o.to_sym]=options[o]
+		end
+		if Pxlsrt::Helpers.isNumeric?(k[:random])
+			k[:random] = k[:random].to_i
+		else
+			k[:random] = false
+		end
+		if Pxlsrt::Helpers.isNumeric?(k[:distance])
+			k[:distance] = k[:distance].to_i
+		else
+			k[:distance] = false
+		end
+		Pxlsrt::Seed.suite(input, output, k)
 	end
 end
 

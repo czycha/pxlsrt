@@ -70,7 +70,7 @@ Same as above example.
 Smart sorting uses edges detected within the image (determined through [Sobel operators](http://en.wikipedia.org/wiki/Sobel_operator)) along with a user-defined threshold to define bandwidths to sort.
 
 ```
-pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--vertical] [--smooth] [--reverse [either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose] [--middle [integer]]
+pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--vertical] [--smooth] [--reverse [either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha | none]] [--diagonal] [--verbose] [--middle [integer]]
 ```
 
 ### Options and parameters ###
@@ -240,6 +240,10 @@ Sorts by the sum of the hue, saturation, brightness, and alpha values.
 ```
 sum-hsba(hue, saturation, brightness, alpha) = (hue * 100 / 360) + saturation + brightness + alpha * 100 / 255
 ```
+
+### none ###
+
+Doesn't do anything to the band. You may think this is useless but if you use it with reverse and/or middlation it can create some cool effects.
 
 ## To use within Ruby files
 

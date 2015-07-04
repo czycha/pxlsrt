@@ -27,7 +27,7 @@ alias jpxlsrt="jruby -S pxlsrt"
 Brute sorting uses a user defined range for bandwidths to sort.
 
 ```
-jpxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--reverse] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha | none]] [--diagonal] [--middle [integer]]
+jpxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--reverse] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | none]] [--diagonal] [--middle [integer]]
 ```
 
 ### Options and parameters ###
@@ -73,7 +73,7 @@ Same as above example.
 Smart sorting uses edges detected within the image (determined through [Sobel operators](http://en.wikipedia.org/wiki/Sobel_operator)) along with a user-defined threshold to define bandwidths to sort.
 
 ```
-jpxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--vertical] [--reverse] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha | none]] [--diagonal] [--middle [integer]]
+jpxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--vertical] [--reverse] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | none]] [--diagonal] [--middle [integer]]
 ```
 
 ### Options and parameters ###
@@ -166,7 +166,7 @@ Sorts by the "distance" of the pixel from the average color of band (excluding t
 
 ```
 avg(colors) = sum(colors) / (length of colors)
-uniqueness(red, green, blue, alpha, reds, greens, blues, alphas) = sqrt((red - avg(reds))^2 + (green - avg(greens))^2 + (blue - avg(blues))^2 + (alpha - avg(alphas))^2)
+uniqueness(red, green, blue, reds, greens, blues) = sqrt((red - avg(reds))^2 + (green - avg(greens))^2 + (blue - avg(blues))^2)
 ```
 
 ### luma ###
@@ -203,14 +203,6 @@ Sorts by a yellow value.
 
 ```
 yellow(red, green, blue) = red + green
-```
-
-### alpha ###
-
-Sorts by the opacity (the opposite of transparency) of a pixel. The "A" in RGBA.
-
-```
-alpha(red, green, blue, alpha) = alpha
 ```
 
 ### none ###

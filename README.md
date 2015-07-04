@@ -1,7 +1,7 @@
 pxlsrt [![Gem Version](https://badge.fury.io/rb/pxlsrt.png)](http://badge.fury.io/rb/pxlsrt)
 ======
 
-Pixel sorter written in Ruby. [On RubyGems.](https://rubygems.org/gems/pxlsrt)
+Pixel sorter written in Ruby. [On RubyGems.](https://rubygems.org/gems/pxlsrt) *(Also available in [JRuby flavor](https://github.com/EVA-01/pxlsrt/tree/jruby)).*
 
 ## Installation
 
@@ -22,7 +22,7 @@ gem install pxlsrt
 Brute sorting uses a user defined range for bandwidths to sort.
 
 ```
-pxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--smooth] [--reverse [either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--diagonal] [--verbose] [--middle [integer]]
+pxlsrt brute INPUT OUTPUT [--min MIN] [--max MAX] [--vertical] [--smooth] [--reverse [either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha | none | sum-rgba | sum-hsba]] [--diagonal] [--verbose] [--middle [integer]]
 ```
 
 ### Options and parameters ###
@@ -60,7 +60,7 @@ Pixel sorts `input.png` vertically by hue with bandwidths from 20 to 30, smoothe
 #### Full suite shortcut example ####
 
 ```
-pxlsrt brute input.png output.png -v -s -r -m hue
+pxlsrt brute input.png output.png --min 20 --max 30 -v -s -r -m hue
 ```
 
 Same as above example.
@@ -70,7 +70,7 @@ Same as above example.
 Smart sorting uses edges detected within the image (determined through [Sobel operators](http://en.wikipedia.org/wiki/Sobel_operator)) along with a user-defined threshold to define bandwidths to sort.
 
 ```
-pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--vertical] [--smooth] [--reverse [either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha | none]] [--diagonal] [--verbose] [--middle [integer]]
+pxlsrt smart INPUT OUTPUT [--threshold THRESHOLD] [--absolute] [--vertical] [--smooth] [--reverse [either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha | none | sum-rgba | sum-hsba]] [--diagonal] [--verbose] [--middle [integer]]
 ```
 
 ### Options and parameters ###
@@ -97,7 +97,7 @@ pxlsrt kim INPUT OUTPUT [--method METHOD] [--value VALUE] [--verbose]
 Inspired by [Jeff Thompson](https://github.com/jeffThompson)'s [seed sorter](https://github.com/jeffThompson/PixelSorting/tree/master/SeedSorting), but only employs portions of their algorithm.
 
 ```
-pxlsrt seed INPUT OUTPUT [--threshold THRESHOLD] [--smooth] [--reverse [either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha]] [--verbose] [--middle [integer]] [--random SEEDCOUNT] [--distance DISTANCE]
+pxlsrt seed INPUT OUTPUT [--threshold THRESHOLD] [--smooth] [--reverse [either]] [--method [sum-rgb | red | green | blue | sum-hsb | hue | saturation | brightness | uniqueness | luma | random | magenta | cyan | yellow | alpha | none | sum-rgba | sum-hsba]] [--verbose] [--middle [integer]] [--random SEEDCOUNT] [--distance DISTANCE]
 ```
 
 * **`--random SEEDCOUNT`** or **`-R SEEDCOUNT`** *(optional)* - Opt to use random seed placement instead of placing seeds based on edge finding. The `SEEDCOUNT` should either be `false`, for the edge finding method, or an integer corresponding to how many seeds to place. Defaults to `false`, (edge finding method).

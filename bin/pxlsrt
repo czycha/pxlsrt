@@ -6,7 +6,7 @@ require 'thor'
 class CLI < Thor
 	#class_option :verbose, :type => :boolean, :default => false, :aliases => "-V"
 
-	option :reverse, :default => false, :aliases => "-r"
+	option :reverse, :default => false, :aliases => "-r", :type => :boolean
 	option :vertical, :type => :boolean, :default => false, :aliases => "-v"
 	option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
 	option :method, :type => :string, :default => "sum-rgb", :banner => "[#{PxlsrtJ::Colors::METHODS.join(" | ")}]", :aliases => "-m", :enum => PxlsrtJ::Colors::METHODS
@@ -26,7 +26,7 @@ class CLI < Thor
 		PxlsrtJ::Brute.suite(input, output, k)
 	end
 
-	option :reverse, :default => false, :aliases => "-r"
+	option :reverse, :default => false, :aliases => "-r", :type => :boolean
 	option :vertical, :type => :boolean, :default => false, :aliases => "-v"
 	option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
 	option :method, :type => :string, :default => "sum-rgb", :banner => "[#{PxlsrtJ::Colors::METHODS.join(" | ")}]", :aliases => "-m", :enum => PxlsrtJ::Colors::METHODS

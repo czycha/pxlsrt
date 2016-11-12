@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["j.bruno.che@gmail.com"]
   spec.summary       = %q{Pixel sort PNG files.}
   spec.description   = %q{Pixel sort PNG files with ease!}
-  spec.homepage      = "https://github.com/EVA-01/pxlsrt"
+  spec.homepage      = "https://github.com/czycha/pxlsrt"
   spec.license       = "MIT"
 
   spec.files         = ["lib/pxlsrt.rb", "lib/pxlsrt/colors.rb", "lib/pxlsrt/helpers.rb", "lib/pxlsrt/brute.rb", "lib/pxlsrt/smart.rb", "lib/pxlsrt/version.rb", "lib/pxlsrt/lines.rb", "lib/pxlsrt/image.rb", "lib/pxlsrt/kim.rb", "lib/pxlsrt/spiral.rb", "lib/pxlsrt/seed.rb"]

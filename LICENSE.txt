@@ -1,4 +1,4 @@
-Copyright (c) 2014 bruno049
+Copyright (c) 2014 czycha
 
 MIT License
 

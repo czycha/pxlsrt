@@ -1,0 +1,6 @@
+Metrics:
+  Enabled: false
+Style/MethodName:
+  Enabled: false
+Style/VariableName:
+  Enabled: false

@@ -13,86 +13,78 @@ require 'thor'
 # * verbose - Have pxlsrt tell you what it's working on.
 # * help - More in depth commands.
 class CLI < Thor
-	class_option :verbose, :type => :boolean, :default => false, :aliases => "-V"
+  class_option :verbose, type: :boolean, default: false, aliases: '-V'
 
-	option :reverse, :default => false, :aliases => "-r"
-	option :vertical, :type => :boolean, :default => false, :aliases => "-v"
-	option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
-	option :smooth, :type => :boolean, :default => false, :aliases => "-s"
-	option :method, :type => :string, :default => "sum-rgb", :banner => "[#{Pxlsrt::Colors::METHODS.join(" | ")}]", :aliases => "-m", :enum => Pxlsrt::Colors::METHODS
-	option :middle, :default => false, :aliases => "-M"
-	option :min, :type => :numeric, :default => Float::INFINITY, :banner => "MINIMUM BANDWIDTH"
-	option :max, :type => :numeric, :default => Float::INFINITY, :banner => "MAXIMUM BANDWIDTH"
-	desc "brute INPUT OUTPUT [options]", "Brute pixel sorting"
-	##
-	# Specific options:
-	# * min - Minimum bandwidth.
-	# * max - Maximum bandwidth.
-	def brute(input, output)
-		k={:trusted=>true}
-		for o in options.keys
-			k[o.to_sym]=options[o]
-		end
-		Pxlsrt::Brute.suite(input, output, k)
-	end
+  option :reverse, default: false, aliases: '-r'
+  option :vertical, type: :boolean, default: false, aliases: '-v'
+  option :diagonal, type: :boolean, default: false, aliases: '-d'
+  option :smooth, type: :boolean, default: false, aliases: '-s'
+  option :method, type: :string, default: 'sum-rgb', banner: "[#{Pxlsrt::Colors::METHODS.join(' | ')}]", aliases: '-m', enum: Pxlsrt::Colors::METHODS
+  option :middle, default: false, aliases: '-M'
+  option :min, type: :numeric, default: Float::INFINITY, banner: 'MINIMUM BANDWIDTH'
+  option :max, type: :numeric, default: Float::INFINITY, banner: 'MAXIMUM BANDWIDTH'
+  desc 'brute INPUT OUTPUT [options]', 'Brute pixel sorting'
+  ##
+  # Specific options:
+  # * min - Minimum bandwidth.
+  # * max - Maximum bandwidth.
+  def brute(input, output)
+    k = { trusted: true }
+    options.each_key do |o|
+      k[o.to_sym] = options[o]
+    end
+    Pxlsrt::Brute.suite(input, output, k)
+  end
 
-	option :reverse, :default => false, :aliases => "-r"
-	option :vertical, :type => :boolean, :default => false, :aliases => "-v"
-	option :diagonal, :type => :boolean, :default => false, :aliases => "-d"
-	option :smooth, :type => :boolean, :default => false, :aliases => "-s"
-	option :method, :type => :string, :default => "sum-rgb", :banner => "[#{Pxlsrt::Colors::METHODS.join(" | ")}]", :aliases => "-m", :enum => Pxlsrt::Colors::METHODS
-	option :middle, :default => false, :aliases => "-M"
-	option :absolute, :type => :boolean, :default => false, :aliases => "-a", :banner => "ABSOLUTE EDGE FINDING"
-	option :threshold, :type => :numeric, :default => 20, :aliases => "-t"
-	desc "smart INPUT OUTPUT [options]", "Smart pixel sorting"
-	##
-	# Specific options:
-	# * threshold - Number used in edge finding. Specifics explained under "absolute".
-	# * absolute - Make edge finding absolute over relative. For example, define a range as a collection of values under the threshold. Relative edge finding is when the contrast of the next pixel is larger than the threshold.
-	def smart(input, output)
-		k={:trusted=>true}
-		for o in options.keys
-			k[o.to_sym]=options[o]
-		end
-		Pxlsrt::Smart.suite(input, output, k)
-	end
+  option :reverse, default: false, aliases: '-r'
+  option :vertical, type: :boolean, default: false, aliases: '-v'
+  option :diagonal, type: :boolean, default: false, aliases: '-d'
+  option :smooth, type: :boolean, default: false, aliases: '-s'
+  option :method, type: :string, default: 'sum-rgb', banner: "[#{Pxlsrt::Colors::METHODS.join(' | ')}]", aliases: '-m', enum: Pxlsrt::Colors::METHODS
+  option :middle, default: false, aliases: '-M'
+  option :absolute, type: :boolean, default: false, aliases: '-a', banner: 'ABSOLUTE EDGE FINDING'
+  option :threshold, type: :numeric, default: 20, aliases: '-t'
+  desc 'smart INPUT OUTPUT [options]', 'Smart pixel sorting'
+  ##
+  # Specific options:
+  # * threshold - Number used in edge finding. Specifics explained under "absolute".
+  # * absolute - Make edge finding absolute over relative. For example, define a range as a collection of values under the threshold. Relative edge finding is when the contrast of the next pixel is larger than the threshold.
+  def smart(input, output)
+    k = { trusted: true }
+    options.each_key do |o|
+      k[o.to_sym] = options[o]
+    end
+    Pxlsrt::Smart.suite(input, output, k)
+  end
 
-	option :method, :type => :string, :default => "brightness", :aliases => "-m", :enum => ["brightness", "white", "black"]
-	option :value, :type => :numeric, :aliases => "-v"
-	desc "kim INPUT OUTPUT [options]", "Uses Kim Asendorf's algorithm"
-	def kim(input, output)
-		k= {:trusted => true}
-		for o in options.keys
-			k[o.to_sym] = options[o]
-		end
-		Pxlsrt::Kim.suite(input, output, k)
-	end
+  option :method, type: :string, default: 'brightness', aliases: '-m', enum: %w(brightness white black)
+  option :value, type: :numeric, aliases: '-v'
+  desc 'kim INPUT OUTPUT [options]', "Uses Kim Asendorf's algorithm"
+  def kim(input, output)
+    k = { trusted: true }
+    options.each_key do |o|
+      k[o.to_sym] = options[o]
+    end
+    Pxlsrt::Kim.suite(input, output, k)
+  end
 
-	option :reverse, :default => false, :aliases => "-r"
-	option :smooth, :type => :boolean, :default => false, :aliases => "-s"
-	option :method, :type => :string, :default => "sum-rgb", :banner => "[#{Pxlsrt::Colors::METHODS.join(" | ")}]", :aliases => "-m", :enum => Pxlsrt::Colors::METHODS
-	option :middle, :default => false, :aliases => "-M"
-	option :random, :default => false, :aliases => "-R"
-	option :distance, :default => 100, :aliases => "-d"
-	option :threshold, :default => 0.1, :aliases => "-t", :type => :numeric
-	desc "seed INPUT OUTPUT [options]", "Seed pixel sorting"
-	def seed(input, output)
-		k={:trusted=>true}
-		for o in options.keys
-			k[o.to_sym]=options[o]
-		end
-		if Pxlsrt::Helpers.isNumeric?(k[:random])
-			k[:random] = k[:random].to_i
-		else
-			k[:random] = false
-		end
-		if Pxlsrt::Helpers.isNumeric?(k[:distance])
-			k[:distance] = k[:distance].to_i
-		else
-			k[:distance] = false
-		end
-		Pxlsrt::Seed.suite(input, output, k)
-	end
+  option :reverse, default: false, aliases: '-r'
+  option :smooth, type: :boolean, default: false, aliases: '-s'
+  option :method, type: :string, default: 'sum-rgb', banner: "[#{Pxlsrt::Colors::METHODS.join(' | ')}]", aliases: '-m', enum: Pxlsrt::Colors::METHODS
+  option :middle, default: false, aliases: '-M'
+  option :random, default: false, aliases: '-R'
+  option :distance, default: 100, aliases: '-d'
+  option :threshold, default: 0.1, aliases: '-t', type: :numeric
+  desc 'seed INPUT OUTPUT [options]', 'Seed pixel sorting'
+  def seed(input, output)
+    k = { trusted: true }
+    options.each_key do |o|
+      k[o.to_sym] = options[o]
+    end
+    k[:random] = Pxlsrt::Helpers.isNumeric?(k[:random]) ? k[:random].to_i : false
+    k[:distance] = Pxlsrt::Helpers.isNumeric?(k[:distance]) ? k[:distance].to_i : false
+    Pxlsrt::Seed.suite(input, output, k)
+  end
 end
 
 CLI.start(ARGV)

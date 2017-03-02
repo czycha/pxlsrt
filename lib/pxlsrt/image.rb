@@ -7,6 +7,11 @@ module Pxlsrt
       @modified = ChunkyPNG::Image.from_canvas(png)
       @width = png.width
       @height = png.height
+      @grey = Array.new(@original.height) do |y|
+        Array.new(@original.width) do |x|
+          ChunkyPNG::Color.grayscale_teint(@original[x, y])
+        end
+      end
     end
 
     ##
@@ -118,19 +123,18 @@ module Pxlsrt
     # Retrieve Sobel value for a given pixel.
     def getSobel(x, y)
       if !defined?(@sobels)
-        @grey ||= @original.grayscale
         @sobel_x ||= [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
         @sobel_y ||= [[-1, -2, -1], [0, 0, 0], [1, 2, 1]]
         return 0 if x.zero? || (x == (@width - 1)) || y.zero? || (y == (@height - 1))
-        t1 = ChunkyPNG::Color.r(@grey[x - 1, y - 1])
-        t2 = ChunkyPNG::Color.r(@grey[x, y - 1])
-        t3 = ChunkyPNG::Color.r(@grey[x + 1, y - 1])
-        t4 = ChunkyPNG::Color.r(@grey[x - 1, y])
-        t5 = ChunkyPNG::Color.r(@grey[x, y])
-        t6 = ChunkyPNG::Color.r(@grey[x + 1, y])
-        t7 = ChunkyPNG::Color.r(@grey[x - 1, y + 1])
-        t8 = ChunkyPNG::Color.r(@grey[x, y + 1])
-        t9 = ChunkyPNG::Color.r(@grey[x + 1, y + 1])
+        t1 = @grey[y - 1][x - 1]
+        t2 = @grey[y - 1][x]
+        t3 = @grey[y - 1][x + 1]
+        t4 = @grey[y][x - 1]
+        t5 = @grey[y][x]
+        t6 = @grey[y][x + 1]
+        t7 = @grey[y + 1][x - 1]
+        t8 = @grey[y + 1][x]
+        t9 = @grey[y + 1][x + 1]
         pixel_x = (@sobel_x[0][0] * t1) + (@sobel_x[0][1] * t2) + (@sobel_x[0][2] * t3) + (@sobel_x[1][0] * t4) + (@sobel_x[1][1] * t5) + (@sobel_x[1][2] * t6) + (@sobel_x[2][0] * t7) + (@sobel_x[2][1] * t8) + (@sobel_x[2][2] * t9)
         pixel_y = (@sobel_y[0][0] * t1) + (@sobel_y[0][1] * t2) + (@sobel_y[0][2] * t3) + (@sobel_y[1][0] * t4) + (@sobel_y[1][1] * t5) + (@sobel_y[1][2] * t6) + (@sobel_y[2][0] * t7) + (@sobel_y[2][1] * t8) + (@sobel_y[2][2] * t9)
         Math.sqrt(pixel_x * pixel_x + pixel_y * pixel_y).ceil

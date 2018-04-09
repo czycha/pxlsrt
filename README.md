@@ -1,7 +1,7 @@
 pxlsrt [![Gem Version](https://badge.fury.io/rb/pxlsrt.png)](http://badge.fury.io/rb/pxlsrt)
 ======
 
-Pixel sorter written in Ruby. [On RubyGems.](https://rubygems.org/gems/pxlsrt) *(Also available in [JRuby flavor](https://github.com/EVA-01/pxlsrt/tree/jruby)).*
+Pixel sorter written in Ruby. [On RubyGems.](https://rubygems.org/gems/pxlsrt) *(Also available for [JRuby](https://github.com/czycha/pxlsrt/tree/jruby) and [Node.js](https://github.com/czycha/pxlsrt.js)).*
 
 ## Installation
 
